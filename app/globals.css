@@ -1,0 +1,576 @@
+@import "tailwindcss";
+
+/* ============================================================================
+   TRADEWITHBARDIA — TOKEN SYSTEM
+   Master prompt §6, §7, §9.
+
+   Three layers, in this order. Never skip a layer.
+
+     1. PRIMITIVES   raw values. Each literal appears exactly ONCE in the repo.
+     2. SEMANTIC     role-named tokens built from primitives via light-dark().
+     3. TAILWIND      @theme inline re-exports semantics as utilities.
+
+   Adding `color: #000000` to a component is a bug. Use `bg-canvas`.
+   ========================================================================= */
+
+/* --- 1. PRIMITIVES ------------------------------------------------------- */
+
+:root {
+  /* Dark scale — §6 */
+  --ink-000: #000000;
+  --ink-050: #080808;
+  --ink-100: #111111;
+  --ink-150: #191919;
+  --ink-200: #232323;
+  --ink-300: #2e2e2e;
+  --ink-500: #8a8a8a;
+  --ink-900: #f5f5f5;
+
+  /* Light scale — §7. A separate system, NOT an inversion of the dark scale. */
+  --paper-000: #f5f6f8;
+  --paper-050: #ffffff;
+  --paper-100: #eef0f4;
+  --paper-200: #e2e5ec;
+  --paper-300: #d4d8e1;
+  --paper-500: #626873;
+  --paper-900: #080808;
+
+  /* Accent — "precision light". §6 says use it sparingly. */
+  --blue-400: #4da3ff;
+  --blue-500: #0a84ff;
+  --blue-600: #0060df;
+  --blue-700: #004ec2;
+
+  /* Market semantics. Deliberately desaturated — this is a research terminal,
+     not a casino (§5, §67). */
+  --long-500: #21a179;
+  --short-500: #c2493d;
+
+  /* --- 2. SEMANTIC ------------------------------------------------------ */
+  /* light-dark() resolves against `color-scheme` below, so every token is
+     declared once and the theme toggle only flips `color-scheme`. */
+
+  color-scheme: dark light;
+
+  --canvas: light-dark(var(--paper-000), var(--ink-000));
+  --surface: light-dark(var(--paper-050), var(--ink-050));
+  --surface-raised: light-dark(var(--paper-100), var(--ink-100));
+  --surface-overlay: light-dark(var(--paper-050), var(--ink-150));
+
+  --text-primary: light-dark(var(--paper-900), var(--ink-900));
+  --text-secondary: light-dark(var(--paper-500), var(--ink-500));
+  --text-inverse: light-dark(var(--ink-900), var(--paper-900));
+
+  --border-subtle: light-dark(var(--paper-200), var(--ink-200));
+  --border-strong: light-dark(var(--paper-300), var(--ink-300));
+
+  --accent: light-dark(var(--blue-600), var(--blue-500));
+  /* Hover moves AWAY from the page's own lightness in both themes: darker on
+     light, lighter on dark. Brightening the light theme's accent on hover
+     dropped white text to 3.65:1 — the same contrast failure as the base
+     button, just hidden in a state nobody screenshots. */
+  --accent-hover: light-dark(var(--blue-700), var(--blue-400));
+
+  /* Foreground for anything sitting ON the accent. It has to flip with the
+     theme: the light theme's accent is dark enough to carry white text
+     (#0060df + white = 5.62:1), but the dark theme's electric blue is not
+     (#0a84ff + white = 3.65:1, below the 4.5:1 floor). Ink on blue restores
+     it to 5.76:1 and reads as intentional rather than washed out. */
+  --accent-contrast: light-dark(var(--paper-050), var(--ink-000));
+
+  --market-long: var(--long-500);
+  --market-short: var(--short-500);
+  --market-grid: light-dark(var(--paper-200), var(--ink-150));
+  --market-axis: light-dark(var(--paper-500), var(--ink-500));
+
+  /* Scrim behind the scrolled navbar (§15). color-mix keeps this derived from
+     the primitives instead of restating their values with an alpha channel —
+     changing --paper-000 or --ink-000 now moves the scrim with it. */
+  --scrim: light-dark(
+    color-mix(in srgb, var(--paper-000) 72%, transparent),
+    color-mix(in srgb, var(--ink-000) 64%, transparent)
+  );
+
+  /* --- Typography scale — §8 -------------------------------------------- */
+  /* Fluid, clamp-based. No breakpoint-specific font-size overrides anywhere. */
+  --text-micro: 0.6875rem;
+  --text-caption: 0.8125rem;
+  --text-body: clamp(0.9375rem, 0.9rem + 0.2vw, 1.0625rem);
+  --text-lead: clamp(1.0625rem, 1rem + 0.4vw, 1.25rem);
+  --text-h3: clamp(1.25rem, 1.1rem + 0.8vw, 1.75rem);
+  --text-h2: clamp(1.75rem, 1.4rem + 1.6vw, 2.75rem);
+  --text-h1: clamp(2.25rem, 1.6rem + 3.2vw, 4.5rem);
+  --text-display: clamp(2.75rem, 1.6rem + 5.6vw, 7rem);
+
+  --tracking-display: -0.03em;
+  --tracking-tight: -0.015em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.08em;
+  --tracking-terminal: 0.16em;
+
+  --leading-tight: 1.06;
+  --leading-snug: 1.25;
+  --leading-normal: 1.6;
+  --leading-relaxed: 1.75;
+
+  /* --- Space, radius, elevation — §9 ------------------------------------ */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-24: 6rem;
+  --space-32: 8rem;
+
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.875rem;
+  --radius-pill: 999px;
+
+  --shadow-raised: 0 1px 2px rgb(0 0 0 / 0.18), 0 8px 24px rgb(0 0 0 / 0.12);
+  --shadow-overlay: 0 24px 64px rgb(0 0 0 / 0.32);
+
+  /* --- Motion — §54. "Slow, precise, fluid, cinematic." ------------------ */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-precision: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --dur-instant: 120ms;
+  --dur-fast: 240ms;
+  --dur-base: 420ms;
+  --dur-slow: 720ms;
+  --dur-scene: 1200ms;
+
+  /* --- Layout ------------------------------------------------------------ */
+  --container-max: 88rem;
+  --container-text: 46rem;
+  --gutter: clamp(1.25rem, 4vw, 4rem);
+  --nav-h-initial: 5.5rem;
+  --nav-h-scrolled: 3.75rem;
+
+  /* --- Z-index — one ladder, no ad-hoc values -------------------------- */
+  --z-base: 0;
+  --z-raised: 10;
+  --z-sticky: 100;
+  --z-nav: 200;
+  --z-menu: 300;
+  --z-overlay: 400;
+  --z-debug: 900;
+}
+
+/* Explicit user choice overrides the system preference. Setting `color-scheme`
+   is all a theme switch needs to do — every light-dark() above re-resolves,
+   and native controls / scrollbars follow (§63). */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+/* --- 3. TAILWIND BRIDGE -------------------------------------------------- */
+/* `inline` makes utilities compile to var(--token) so they stay live at
+   runtime instead of being frozen at build time. */
+
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-overlay: var(--surface-overlay);
+  --color-primary: var(--text-primary);
+  --color-secondary: var(--text-secondary);
+  --color-inverse: var(--text-inverse);
+  --color-subtle: var(--border-subtle);
+  --color-strong: var(--border-strong);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-contrast: var(--accent-contrast);
+  --color-long: var(--market-long);
+  --color-short: var(--market-short);
+
+  --font-display: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, "SFMono-Regular", monospace;
+  --font-persian: var(--font-vazirmatn), var(--font-inter), system-ui, sans-serif;
+
+  /* No radius/ease aliases here. Declaring `--radius-sm: var(--radius-sm)`
+     emits a self-referential custom property that only resolves because the
+     primitive happens to be declared later in source order — and nothing used
+     the generated utilities anyway. Components reference the primitives
+     directly, e.g. `rounded-[var(--radius-lg)]`. */
+}
+
+/* --- BASE ---------------------------------------------------------------- */
+
+@layer base {
+  * {
+    border-color: var(--border-subtle);
+  }
+
+  html {
+    /* Lenis owns smooth scrolling (§56); native smooth would fight it. */
+    scroll-behavior: auto;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* NOTE on RTL: at odd viewport widths (e.g. 1425px with a scrollbar) an RTL
+     document reports one extra pixel of scrollWidth and a 1px horizontal
+     scroll range, with no element actually crossing the viewport edge. It is
+     a scroll-origin rounding characteristic of the engine, not a layout bug.
+     `overflow-x: clip` on <html> was tried here and does not remove it, so it
+     is not carried. The invariant that matters — and that is asserted — is
+     that no element overflows. */
+
+  body {
+    background-color: var(--canvas);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    font-size: var(--text-body);
+    line-height: var(--leading-normal);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: clip;
+  }
+
+  /* Persian gets its own face and a slightly looser leading — Vazirmatn's
+     ascenders and diacritics need the room (§8, §17).
+     Matched on any [lang] ancestor, not on :root: the document shell sits
+     above the locale segment, so `lang` lives on the locale wrapper. */
+  [lang="fa"] {
+    font-family: var(--font-persian);
+    line-height: var(--leading-relaxed);
+  }
+
+  /* Financial data is always monospaced and tabular so digits do not jitter
+     as values update (§8). */
+  .numeric {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+  }
+
+  /* Latin runs inside Persian copy keep LTR order without breaking the
+     paragraph's RTL flow — same UAX #9 P2/P3 problem solved in the vault's
+     RTL work, applied here at the CSS layer. */
+  [lang="fa"] .latin {
+    unicode-bidi: isolate;
+    direction: ltr;
+    font-family: var(--font-mono);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: var(--radius-sm);
+  }
+
+  /* The main landmark is focusable only so the skip link can move focus to it.
+     It is not a control, so it should not paint a focus ring when it receives
+     that focus. Interactive elements inside it are unaffected. */
+  main:focus,
+  main:focus-visible {
+    outline: none;
+  }
+
+  ::selection {
+    background: var(--accent);
+    color: var(--accent-contrast);
+  }
+
+  h1, h2, h3 {
+    letter-spacing: var(--tracking-tight);
+    line-height: var(--leading-tight);
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+}
+
+/* --- COMPONENT PRIMITIVES ------------------------------------------------ */
+/* Recurring interactive shapes live here, not as arbitrary-value class strings
+   repeated across components. One definition, one place to change (§9). */
+
+@layer components {
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    height: 2.75rem;
+    padding-inline: var(--space-6);
+    border-radius: var(--radius-pill);
+    font-size: var(--text-caption);
+    font-weight: 500;
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    white-space: nowrap;
+    transition:
+      background-color var(--dur-fast) var(--ease-out),
+      border-color var(--dur-fast) var(--ease-out),
+      color var(--dur-fast) var(--ease-out),
+      transform var(--dur-fast) var(--ease-out);
+  }
+
+  .btn:active {
+    transform: translateY(1px);
+  }
+
+  .btn-primary {
+    background-color: var(--accent);
+    color: var(--accent-contrast);
+    border: 1px solid var(--accent);
+  }
+
+  .btn-primary:hover {
+    background-color: var(--accent-hover);
+    border-color: var(--accent-hover);
+  }
+
+  .btn-ghost {
+    background-color: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-subtle);
+  }
+
+  .btn-ghost:hover {
+    color: var(--text-primary);
+    border-color: var(--border-strong);
+  }
+
+  /* Square variant for the theme and language controls. */
+  .btn-icon {
+    height: 2.25rem;
+    min-width: 2.25rem;
+    padding-inline: var(--space-3);
+    font-size: var(--text-micro);
+  }
+
+  .nav-link {
+    position: relative;
+    display: inline-block;
+    padding-block: var(--space-2);
+    font-size: var(--text-caption);
+    color: var(--text-secondary);
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+
+  .nav-link:hover,
+  .nav-link[aria-current="page"] {
+    color: var(--text-primary);
+  }
+
+  /* The one hairline of accent a link is allowed (§6). */
+  .nav-link::after {
+    content: "";
+    position: absolute;
+    inset-inline-start: 0;
+    bottom: 0;
+    height: 1px;
+    width: 100%;
+    background-color: var(--accent);
+    transform: scaleX(0);
+    transform-origin: inline-start;
+    transition: transform var(--dur-base) var(--ease-precision);
+  }
+
+  .nav-link:hover::after,
+  .nav-link[aria-current="page"]::after {
+    transform: scaleX(1);
+  }
+
+  /* --- Navbar states — §15 ---------------------------------------------- */
+  /* INITIAL · SCROLLED · HIDDEN · MENU_OPEN. MOBILE is a viewport condition
+     rather than a scroll state, so it is a media query, not a data-state.
+     The state attribute is written by the frame loop, never by React (§57). */
+
+  .site-header {
+    position: fixed;
+    inset-block-start: 0;
+    inset-inline: 0;
+    z-index: var(--z-nav);
+    height: var(--nav-h-initial);
+    display: flex;
+    align-items: center;
+    background-color: transparent;
+    border-bottom: 1px solid transparent;
+    transition:
+      height var(--dur-base) var(--ease-precision),
+      transform var(--dur-base) var(--ease-precision),
+      background-color var(--dur-base) var(--ease-out),
+      border-color var(--dur-base) var(--ease-out);
+    will-change: transform;
+  }
+
+  .site-header[data-state="scrolled"],
+  .site-header[data-state="menu-open"] {
+    height: var(--nav-h-scrolled);
+    background-color: var(--scrim);
+    backdrop-filter: blur(14px) saturate(1.4);
+    border-bottom-color: var(--border-subtle);
+  }
+
+  .site-header[data-state="hidden"] {
+    height: var(--nav-h-scrolled);
+    background-color: var(--scrim);
+    backdrop-filter: blur(14px) saturate(1.4);
+    border-bottom-color: var(--border-subtle);
+    transform: translateY(-100%);
+  }
+
+  /* A hidden navbar is a trap for keyboard users — reaching a control inside
+     it must bring it back regardless of scroll direction (§63). */
+  .site-header:focus-within {
+    transform: none;
+  }
+
+  .site-brand {
+    font-family: var(--font-display);
+    font-size: var(--text-caption);
+    font-weight: 600;
+    letter-spacing: var(--tracking-terminal);
+    text-transform: uppercase;
+    color: var(--text-primary);
+    transition: opacity var(--dur-fast) var(--ease-out);
+  }
+
+  .site-brand:hover {
+    opacity: 0.7;
+  }
+
+  /* --- Mobile menu — §52 ------------------------------------------------- */
+
+  .menu-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-menu);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background-color: var(--canvas);
+    padding-inline: var(--gutter);
+    padding-block: var(--nav-h-scrolled);
+  }
+
+  .menu-item {
+    display: block;
+    font-family: var(--font-display);
+    font-size: var(--text-h2);
+    letter-spacing: var(--tracking-tight);
+    line-height: 1.15;
+    color: var(--text-primary);
+    padding-block: var(--space-2);
+    /* Clip reveal with a per-item delay set inline as --i (§52). */
+    animation: menu-reveal var(--dur-slow) var(--ease-precision) backwards;
+    animation-delay: calc(var(--i, 0) * 55ms);
+  }
+
+  .menu-item[aria-disabled="true"] {
+    color: var(--text-secondary);
+  }
+
+  @keyframes menu-reveal {
+    from {
+      opacity: 0;
+      transform: translateY(0.6em);
+      clip-path: inset(0 0 100% 0);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+      clip-path: inset(0 0 -20% 0);
+    }
+  }
+
+  /* Sections whose page is still a placeholder get a marker rather than being
+     hidden or disabled. The information architecture is real from day one —
+     the URLs resolve, the shell renders, the content is honest about its
+     state (§68). The dot is what stops a visitor clicking through six of them
+     to find that out. */
+  .nav-pending {
+    position: relative;
+    padding-inline-end: 0.65em;
+  }
+
+  .nav-pending::before {
+    content: "";
+    position: absolute;
+    inset-inline-end: 0;
+    inset-block-start: 0.55em;
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background-color: var(--accent);
+    opacity: 0.75;
+  }
+}
+
+/* --- UTILITIES ----------------------------------------------------------- */
+
+@layer utilities {
+  .container-page {
+    width: 100%;
+    max-width: var(--container-max);
+    margin-inline: auto;
+    padding-inline: var(--gutter);
+  }
+
+  /* Terminal-style eyebrow label used across sections. */
+  .label-terminal {
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    letter-spacing: var(--tracking-terminal);
+    text-transform: uppercase;
+    color: var(--text-secondary);
+  }
+
+  /* One hairline of "precision light" (§6). */
+  .rule-accent {
+    background: linear-gradient(
+      to var(--rule-dir, right),
+      var(--accent),
+      transparent
+    );
+  }
+
+  /* Locale-gated blocks, for the few pages that must render every language and
+     let the document pick — `not-found.tsx`, which has no route params to read
+     a locale from. One rule per locale is required because CSS cannot compare
+     an attribute against an ancestor's; ADD A RULE HERE when adding a locale
+     to `lib/i18n/config.ts`. */
+  [lang="fa"] [data-locale-only]:not([data-locale-only="fa"]),
+  [lang="en"] [data-locale-only]:not([data-locale-only="en"]) {
+    display: none;
+  }
+
+  .sr-only-focusable:not(:focus):not(:focus-within) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+/* --- REDUCED MOTION — §58 ------------------------------------------------ */
+/* Content is never removed, only the motion around it. Scroll-driven scenes
+   read `prefers-reduced-motion` in JS and jump to their resolved end state
+   rather than animating (see lib/motion/reduced-motion.ts). */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

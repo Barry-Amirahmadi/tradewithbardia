@@ -1,0 +1,87 @@
+{
+  "meta": {
+    "title": "TradeWithBardia — Systematic Trading Research & Education",
+    "description": "A structured trading process, studied through data. Setup research, a learning path, and tools for analysing your own execution."
+  },
+  "nav": {
+    "brand": "TradeWithBardia",
+    "brandShort": "TB",
+    "learn": "Learn",
+    "systems": "Systems",
+    "setups": "Setups",
+    "journal": "Journal",
+    "dictionary": "Dictionary",
+    "about": "About",
+    "cta": "Start learning",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "primaryLabel": "Primary",
+    "themeToggle": "Switch theme",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "themeSystem": "System",
+    "localeToggle": "Change language",
+    "skipToContent": "Skip to content"
+  },
+  "hero": {
+    "eyebrow": "Systematic trading research",
+    "titleLine1": "The market is noise",
+    "titleLine2": "until you give it structure",
+    "lead": "A defined process for reading liquidity, structure and execution — written down, tested against data, and taught step by step.",
+    "ctaPrimary": "Start learning",
+    "ctaSecondary": "Explore the process",
+    "scrollHint": "Scroll",
+    "sceneLabel": "Illustrative market sequence",
+    "sceneDescription": "A scroll-driven diagram walking through one setup: market context, liquidity, sweep, market structure shift, fair value gap, then entry with a defined stop and target.",
+    "stages": {
+      "market": { "label": "Market", "caption": "Price, unfiltered." },
+      "noise": { "label": "Noise", "caption": "Most of what you see is not a signal." },
+      "structure": { "label": "Structure", "caption": "Highs and lows start to describe intent." },
+      "liquidity": { "label": "Liquidity", "caption": "Resting orders pool where everyone agrees." },
+      "sweep": { "label": "Sweep", "caption": "The level is taken. That is the point of it." },
+      "mss": { "label": "Market structure shift", "caption": "Direction changes, and it is measurable." },
+      "fvg": { "label": "Fair value gap", "caption": "The imbalance left behind becomes the location." },
+      "entry": { "label": "Execution", "caption": "Entry, stop and target defined before the trade." },
+      "system": { "label": "System", "caption": "One repeatable process, not one lucky trade." }
+    }
+  },
+  "process": {
+    "eyebrow": "The loop",
+    "title": "Every trade is an input to the next one",
+    "lead": "The process is a closed loop. Data from execution feeds back into research, and research changes what gets traded.",
+    "steps": {
+      "context": { "label": "Context", "body": "What kind of market is this, and does it suit the setup at all?" },
+      "liquidity": { "label": "Liquidity", "body": "Where are the resting orders, and which side is likely to be taken first?" },
+      "structure": { "label": "Structure", "body": "Has direction actually shifted, by a rule that can be checked?" },
+      "setup": { "label": "Setup", "body": "Does this match a written specification, or is it an improvisation?" },
+      "execution": { "label": "Execution", "body": "Entry, stop and target are decided before risk is taken." },
+      "review": { "label": "Review", "body": "Was the rule followed? That question is separate from whether it won." },
+      "data": { "label": "Data", "body": "Enough samples, and the process starts describing its own behaviour." }
+    }
+  },
+  "viz": {
+    "disclosures": {
+      "synthetic": "Illustrative diagram. Synthetic price data, not a trade record and not a performance claim.",
+      "research": "Research data under study. No validated edge is claimed, and no minimum sample size has been met.",
+      "demo": "Demo data. Placeholder values standing in for a source that is not connected yet."
+    }
+  },
+  "section": {
+    "eyebrow": "In development",
+    "title": "This section is being built.",
+    "body": "The route, the shell and the design system are live. The content for this section lands in the next phase — it will arrive as data, not as a rebuild.",
+    "back": "Back to the system"
+  },
+  "notFound": {
+    "code": "404",
+    "title": "This market structure doesn't exist.",
+    "body": "The page you asked for isn't part of the system.",
+    "back": "Return to system"
+  },
+  "footer": {
+    "tagline": "Process over prediction.",
+    "phase": "Phase 0 — architecture and shell.",
+    "riskTitle": "Risk notice",
+    "riskBody": "Educational material only. Nothing here is financial advice, a signal service, or an offer to manage money. Trading carries the risk of losing capital."
+  }
+}
