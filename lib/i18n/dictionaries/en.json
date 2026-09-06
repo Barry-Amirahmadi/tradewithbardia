@@ -111,39 +111,140 @@
       }
     }
   },
-  "process": {
-    "eyebrow": "The loop",
-    "title": "Every trade is an input to the next one",
-    "lead": "The process is a closed loop. Data from execution feeds back into research, and research changes what gets traded.",
-    "steps": {
+  "system": {
+    "eyebrow": "The system",
+    "title": "A setup is not the system",
+    "lead": "A setup is one stage inside a closed process. What produces a result is the order of the stages, not an isolated pattern.",
+    "stagesLabel": "Stages of the trading system",
+    "conceptsLabel": "Concepts introduced here",
+    "loopEyebrow": "The loop",
+    "loopTitle": "Data changes how the market is read",
+    "loopBody": "The output of the last stage is the input to the first. That is what makes this a system rather than a checklist: review and data do not end the process, they decide what counts as context next time.",
+    "cta": "Inspect the setups",
+    "stages": {
+      "market": {
+        "label": "Market",
+        "question": "What is actually in front of me?",
+        "body": "The market produces movement all day. Most of it is information about positioning, not an opportunity. The first discipline is refusing to treat every move as a signal."
+      },
       "context": {
         "label": "Context",
-        "body": "What kind of market is this, and does it suit the setup at all?"
+        "question": "Does this environment suit the setup at all?",
+        "body": "Session, higher-timeframe direction, the range in force, the levels that matter. Context decides whether a setup is worth looking for, before any entry is considered."
       },
       "liquidity": {
         "label": "Liquidity",
-        "body": "Where are the resting orders, and which side is likely to be taken first?"
+        "question": "Where are the resting orders?",
+        "body": "Price travels toward places where orders are parked. Equal highs and lows are obvious to everyone, which is exactly what makes them a destination rather than a barrier."
       },
       "structure": {
         "label": "Structure",
-        "body": "Has direction actually shifted, by a rule that can be checked?"
+        "question": "Has direction actually changed?",
+        "body": "A shift is a rule, not an impression. Structure gives the change a definition that can be checked afterwards, and disagreed with."
       },
       "setup": {
         "label": "Setup",
-        "body": "Does this match a written specification, or is it an improvisation?"
+        "question": "Does this match something written down?",
+        "body": "Context, liquidity and structure together produce a candidate, not a signal. A setup is a specification with conditions, and the Setup Lab is where it becomes a testable hypothesis."
       },
       "execution": {
         "label": "Execution",
-        "body": "Entry, stop and target are decided before risk is taken."
+        "question": "What exactly triggers the decision?",
+        "body": "Entry, invalidation and target are defined before risk is taken. Entry is a decision point. It is not an outcome, and a trade that moved in your favour was not correct for that reason."
+      },
+      "risk": {
+        "label": "Risk",
+        "question": "What is this allowed to cost?",
+        "body": "Invalidation is chosen from structure, and size follows from the invalidation. Risk is decided first because it is the only part of a trade fully under control."
       },
       "review": {
         "label": "Review",
-        "body": "Was the rule followed? That question is separate from whether it won."
+        "question": "Was the process followed?",
+        "body": "That question is separate from whether the trade won. A rule followed on a loser is a good trade; a rule broken on a winner is the expensive one."
       },
       "data": {
         "label": "Data",
-        "body": "Enough samples, and the process starts describing its own behaviour."
+        "question": "What do the records say?",
+        "body": "Individual trades are anecdotes. Enough of them, recorded the same way, and the process starts describing its own behaviour, which is the only honest basis for changing it."
       }
+    }
+  },
+  "concepts": {
+    "market": {
+      "term": "Market",
+      "definition": "The continuous stream of price and participation, before any interpretation is applied to it."
+    },
+    "context": {
+      "term": "Context",
+      "definition": "The conditions surrounding a possible trade: session, higher-timeframe direction, range and volatility."
+    },
+    "liquidity": {
+      "term": "Liquidity",
+      "definition": "Areas where resting orders accumulate, which price tends to move toward rather than away from."
+    },
+    "structure": {
+      "term": "Structure",
+      "definition": "The sequence of swing highs and lows that describes direction in a way that can be checked."
+    },
+    "setup": {
+      "term": "Setup",
+      "definition": "A written specification of conditions that together identify a candidate trade."
+    },
+    "execution": {
+      "term": "Execution",
+      "definition": "Opening a defined position once its trigger conditions are met."
+    },
+    "risk": {
+      "term": "Risk",
+      "definition": "The predetermined amount a trade is allowed to cost, decided before entry."
+    },
+    "review": {
+      "term": "Review",
+      "definition": "Assessment of whether the process was followed, kept separate from whether the trade profited."
+    },
+    "data": {
+      "term": "Data",
+      "definition": "Accumulated trade records treated as a sample, used to describe the process rather than to justify it."
+    },
+    "equalHighs": {
+      "term": "Equal highs",
+      "definition": "Two or more highs at effectively the same price, marking a pool of resting orders above them."
+    },
+    "equalLows": {
+      "term": "Equal lows",
+      "definition": "Two or more lows at effectively the same price, marking a pool of resting orders below them."
+    },
+    "sweep": {
+      "term": "Sweep",
+      "definition": "Price trading through a liquidity level and rejecting, taking the orders resting there."
+    },
+    "bos": {
+      "term": "Break of structure",
+      "definition": "Price closing beyond a prior swing point in the direction of the existing trend."
+    },
+    "mss": {
+      "term": "Market structure shift",
+      "definition": "A break of structure against the prevailing direction, defining a change rather than a continuation."
+    },
+    "displacement": {
+      "term": "Displacement",
+      "definition": "An impulsive move that leaves imbalance behind, separating intent from ordinary movement."
+    },
+    "fvg": {
+      "term": "Fair value gap",
+      "definition": "The unfilled price range left behind by an impulsive move, often used as a location to act from."
+    },
+    "entry": {
+      "term": "Entry",
+      "definition": "The specific price and condition at which a position is opened."
+    },
+    "invalidation": {
+      "term": "Invalidation",
+      "definition": "The price at which the reason for the trade no longer holds."
+    },
+    "positionSize": {
+      "term": "Position size",
+      "definition": "The quantity chosen so that reaching invalidation costs the predetermined amount."
     }
   },
   "viz": {

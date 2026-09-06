@@ -44,6 +44,12 @@ Adding setup #41 or lesson #100 must mean adding a record, never editing JSX.
   array.
 - Scene geometry lives in `lib/viz/scenes/`. Renderers know how to draw a
   `TradingScene`; they know nothing about which scene.
+- **Every trading concept has one canonical identity**, in
+  `lib/trading/concepts.ts`. A concept is referenced, never redefined. Before
+  EPIC 04 the vocabulary existed in three partial copies — hero beats, process
+  steps and nav children — and "liquidity" was three unrelated strings. The
+  Setup Lab, Academy, Dictionary, Journal and search all name the same id, and
+  a stage id that stops being a concept fails the build.
 
 §24, §41, §45, §77.3.
 

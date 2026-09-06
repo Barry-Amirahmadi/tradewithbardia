@@ -24,7 +24,13 @@ export type AnalyticsEvent =
   | "search_select"
   | "language_change"
   | "theme_change"
-  | "cta_click";
+  | "cta_click"
+  // Trading System Story (EPIC 04). Payload ids are canonical concept and
+  // stage ids — `system.liquidity`, `concept.mss` — never display strings,
+  // which differ by locale and would split one event into two.
+  | "system_view"
+  | "system_stage_enter"
+  | "concept_open";
 
 /**
  * Payloads carry identifiers and UI state only. No free text from a user, no

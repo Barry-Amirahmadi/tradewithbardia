@@ -37,7 +37,9 @@ Phase 0 builds all three and implements the smallest real version of each.
 app/[locale]/          Root layout (html/lang/dir), home, sections, 404
 components/
   navigation/          Navbar (5 states), MobileMenu, Theme + Locale toggles
-  sections/            Hero (server) → HeroScene (client), Process, Footer
+  sections/            Hero (server) → HeroScene (client), Footer
+    TradingSystem/     TradingSystemStory (server) → SystemScroller, SystemLoop
+  trading/             ConceptNode — the Dictionary integration contract
   motion/              SmoothScroll
   charts/              TradingAnimation (façade), SceneDisclosure
 lib/
@@ -46,6 +48,8 @@ lib/
   viz/                 Renderer abstraction, canvas + static renderers, scenes
                        market-tokens (the shared chart vocabulary)
                        render-profile (what each performance mode may draw)
+  trading/             concepts (the canonical model), system-stages
+  search/              provider registry, navigation + concept providers
   navigation.ts        The information architecture, as data
   theme.ts             Theme store + pre-paint init script
 proxy.ts               Locale resolution and redirect
@@ -200,6 +204,106 @@ carrying the synthetic disclosure by changing one field rather than by someone
 remembering to delete a paragraph. A future atmospheric video layer sits behind
 the plot as an additional layer; the narrative works without it, which is the
 condition for adding it at all.
+
+## The trading system story
+
+EPIC 04. Nine stages closing back onto the first, carrying one claim: a setup
+is not the system, it is one stage inside a process whose output is its own
+input.
+
+### The canonical concept model
+
+The architectural centre of this epic, and the reason it was not simply a new
+section. The trading vocabulary existed in **three partial copies** that agreed
+with none of the others:
+
+| Copy | Where | Ids |
+|---|---|---|
+| Hero beats | `hero-scene.ts` | market, noise, structure, liquidity, sweep, mss, fvg, entry, system |
+| Process steps | `Process.tsx` + `dictionary.process` | context, liquidity, structure, setup, execution, review, data |
+| Nav children | `navigation.ts` | tradingSystem, marketContext, liquidity, structure, execution, risk, review |
+
+"Liquidity" was a beat id, a dictionary key and a nav label key — three
+strings, no relationship, and nothing preventing a fourth when the Dictionary
+arrived.
+
+`lib/trading/concepts.ts` is now the single identity for all of it. Nineteen
+concepts: the nine stages, plus the mechanisms they introduce. It carries
+identity and relationships and **no prose** — every human-readable word is a
+dictionary key, because a concept model that holds English cannot be
+translated.
+
+```
+TradingConceptId  →  parent · related · prerequisites · surfaces
+```
+
+Two derived relations are deliberately **not stored**: `childrenOf` inverts
+`parent` and `usedBy` inverts `prerequisites`. A stored inverse is a second
+copy that drifts the first time somebody edits one side.
+
+Integrity is enforced at module load, not only by tests: a dangling reference,
+a self-reference or a prerequisite cycle throws during the build. The test
+suite asserts the same properties so the failure is legible either way.
+
+### Stages are concepts
+
+`system-stages.ts` declares no parallel id union. `SystemStageId` is a subset of
+`TradingConceptId`, so the Setup Lab tagging a setup `"liquidity"` and this
+section highlighting stage `"liquidity"` are the same string, checked by the
+compiler. A test fails if a stage id stops being a concept.
+
+Progress resolution reuses `normalizeProgress` from the visualization engine
+rather than reimplementing clamping — which is why NaN, overshoot and reverse
+scrolling behave identically here and in the hero.
+
+`Process.tsx` and the `process` dictionary section were **deleted**, not left
+alongside. Leaving them would have preserved exactly the duplication this epic
+exists to remove.
+
+### Rendering
+
+DOM and SVG, not canvas. The figure is nine labelled points on a ring; a canvas
+would cost a renderer, a fallback and a measurement lifecycle to draw what
+vector graphics draw natively, and would put the stage names beyond reach of a
+screen reader. The visualization façade is untouched and unextended — it owns
+charts, and this is a flow diagram.
+
+Colour comes from accent and border tokens, never the market vocabulary.
+`--market-liquidity` means liquidity *on a price chart*; borrowing it for a
+process diagram would say something untrue.
+
+The section is a **server component**. Every stage's question and body is real
+HTML: crawlable, translatable, and readable with JavaScript off. The client
+shell adds the loop diagram and the active-stage highlight on top of content
+that already works.
+
+### Scroll and render cost
+
+One `useScrollProgress` subscription to the existing frame loop. No second
+scroll engine, no scroll listener, no second RAF chain. React renders are
+bounded by stage count, not frame rate: the active stage changes at most eight
+times across the whole section.
+
+Under reduced motion the section is not scroll-driven at all — every stage
+reads as reached, the loop shows closed, and nothing is sampled.
+
+### Integration points
+
+- **Setup Lab (EPIC 05)** — `conceptsForSurface("setupLab")` already names the
+  concepts a setup will be tagged with. The section's CTA hands off to it.
+- **Academy (EPIC 06)** — `prerequisites` is an acyclic graph, so a learning
+  path is a topological sort over concepts that already exist.
+- **Dictionary (EPIC 07)** — `concepts.<id>.term` / `.definition` are written
+  for all nineteen in both locales. `ConceptNode` is the integration contract:
+  it renders `data-concept="<id>"` in the DOM, so every occurrence is findable
+  without parsing display text, which differs by locale.
+- **Journal (EPIC 08)** — `conceptsForSurface("journal")` names what a trade
+  record will be tagged with; review and data are already concepts.
+- **Search** — `lib/search/concept-provider.ts` registers into the EPIC 02
+  registry. A whole content domain became searchable by adding one file, with
+  no change to the command palette. Results carry canonical ids, so the
+  Dictionary will later return richer results for the same ids rather than a
+  parallel set.
 
 ## Motion
 

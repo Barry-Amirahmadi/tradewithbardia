@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 
 import PageMain from "@/components/layout/PageMain";
 import Hero from "@/components/sections/Hero";
-import Process from "@/components/sections/Process";
+import TradingSystemStory from "@/components/sections/TradingSystem/TradingSystemStory";
 import { isLocale, localeDirection } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 
@@ -23,7 +23,7 @@ export default async function HomePage({
         direction={localeDirection[locale]}
         dictionary={dictionary}
       />
-      <Process dictionary={dictionary} />
+      <TradingSystemStory locale={locale} dictionary={dictionary} />
     </PageMain>
   );
 }

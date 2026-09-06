@@ -46,9 +46,11 @@ const MEGA_CLOSE_DELAY = 120;
 interface Props {
   locale: Locale;
   nav: Dictionary["nav"];
+  concepts: Dictionary["concepts"];
+  system: Dictionary["system"];
 }
 
-export default function Navbar({ locale, nav }: Props) {
+export default function Navbar({ locale, nav, concepts, system }: Props) {
   const headerRef = useRef<HTMLElement>(null);
   const pathname = usePathname();
 
@@ -384,6 +386,8 @@ export default function Navbar({ locale, nav }: Props) {
         onClose={() => setPaletteOpen(false)}
         locale={locale}
         nav={nav}
+        concepts={concepts}
+        system={system}
       />
     </>
   );

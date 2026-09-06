@@ -8,14 +8,14 @@ commands are below. Automating it belongs with CI, not with Phase 0.
 
 ---
 
-## Measured baseline (2026-09-06, EPIC 03)
+## Measured baseline (2026-09-06, EPIC 04)
 
 | Metric | Measured | Budget | Headroom |
 |---|---|---|---|
-| Initial JS, gzipped (`/en`) | **188 KB** | **220 KB** | 32 KB |
+| Initial JS, gzipped (`/en`) | **190 KB** | **220 KB** | 30 KB |
 | Initial JS, raw | 600 KB | 700 KB | 100 KB |
 | Scripts on first load | 10 | 12 | 2 |
-| HTML document, raw | 88 KB | 110 KB | 22 KB |
+| HTML document, raw | **109 KB** | 110 KB | **1 KB — see below** |
 | CSS, gzipped | 10.5 KB | 25 KB | 14.5 KB |
 | Fonts, total woff2 | 131 KB (3 faces) | 140 KB | 9 KB |
 | Route chunk, per section page | < 5 KB | 40 KB | — |
@@ -23,9 +23,25 @@ commands are below. Automating it belongs with CI, not with Phase 0.
 | Command palette chunk | 5 KB | 25 KB | 20 KB |
 | Smooth scroll (Lenis) | 32 KB | 40 KB | 8 KB |
 
-EPIC 03 added the nine-beat hero, render budgets, the shared chart vocabulary
-and the atmospheric layer for **+0.3 KB** of initial JS. Almost all of it
-either lives in the code-split canvas chunk or is pure data.
+EPIC 04 added the Trading System Story — nine stages, nineteen concepts and
+their definitions in two languages — for **+2.3 KB** of initial JS. The section
+is a server component, so nearly all of its weight is HTML rather than
+JavaScript; the only client code is the scroll wiring, the loop figure and the
+concept nodes.
+
+**The HTML budget is now the binding constraint: 109 KB against 110 KB.** Two
+things drive it, and both are deliberate. The hero's static SVG fallback is
+inlined so the §50 chain is real rather than decorative, and the system
+section's prose is server-rendered so it survives with JavaScript off (§25).
+Next also inlines the RSC payload, so text content is effectively counted
+twice.
+
+This is the first budget in the project with no meaningful headroom. Before the
+next section ships, one of these has to happen: reduce the hero fallback's
+candle count (the cheapest, and already the standing recommendation below),
+move the system section to its own route so the home document carries one of
+the two, or raise the budget with a measured argument for why 110 KB was the
+right number in the first place.
 
 Most of the 188 KB is React plus the Next runtime. The application's own code
 is a small fraction of it, which is the intended shape: the heavy parts of this

@@ -8,6 +8,7 @@ import { localeDirection, withLocale, locales, type Locale } from "@/lib/i18n/co
 import type { Dictionary } from "@/lib/i18n/dictionary-type";
 import { useDismissableLayer } from "@/lib/interaction/use-dismissable-layer";
 import { prefersReducedMotion } from "@/lib/motion/frame-loop";
+import { createConceptProvider } from "@/lib/search/concept-provider";
 import {
   createCommandProvider,
   createNavigationProvider,
@@ -42,9 +43,11 @@ interface Props {
   onClose: () => void;
   locale: Locale;
   nav: Dictionary["nav"];
+  concepts: Dictionary["concepts"];
+  system: Dictionary["system"];
 }
 
-export default function CommandPalette({ open, onClose, locale, nav }: Props) {
+export default function CommandPalette({ open, onClose, locale, nav, concepts, system }: Props) {
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -93,9 +96,12 @@ export default function CommandPalette({ open, onClose, locale, nav }: Props) {
     const unregister = [
       registerSearchProvider(createNavigationProvider(nav)),
       registerSearchProvider(createCommandProvider()),
+      // EPIC 04. A whole content domain became searchable by adding a file —
+      // the registry doing exactly what it was built for.
+      registerSearchProvider(createConceptProvider(concepts, system)),
     ];
     return () => unregister.forEach((fn) => fn());
-  }, [nav]);
+  }, [nav, concepts, system]);
 
   // Query → results. Async because a future provider will be. State is set
   // only inside the async callback, never synchronously in the effect body,

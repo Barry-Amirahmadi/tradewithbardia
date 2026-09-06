@@ -1718,6 +1718,222 @@
     50% { transform: translateY(4px); opacity: 1; }
   }
 
+  /* --- TRADING SYSTEM STORY — EPIC 04 §3, §7, §13 -----------------------
+     A system diagram beside a scrolling narrative. Deliberately NOT a second
+     chart language: the hero owns the chart, this owns the process, and the
+     two share tokens rather than visuals. Accent and border here, never the
+     market vocabulary — those tokens mean bullish, liquidity and imbalance,
+     and borrowing them for a flow diagram would say something untrue. */
+
+  .system-section {
+    border-block-start: 1px solid var(--border-subtle);
+    background-color: var(--surface);
+    padding-block: var(--space-32);
+  }
+
+  .system-grid {
+    display: grid;
+    gap: var(--space-12);
+  }
+
+  @media (width >= 64rem) {
+    .system-grid {
+      grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+      gap: var(--space-16);
+      align-items: start;
+    }
+
+    /* The diagram stays while the narrative moves past it — the reader can
+       always see where the current stage sits in the whole loop. Offset by
+       the scrolled navbar so it never hides under it. */
+    .system-aside {
+      position: sticky;
+      inset-block-start: calc(var(--nav-h-scrolled) + var(--space-8));
+    }
+  }
+
+  .system-stage-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-16);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .system-stage {
+    border-block-start: 1px solid var(--border-subtle);
+    padding-block-start: var(--space-6);
+  }
+
+  /* Every stage stays fully legible rather than dimming to spotlight the
+     active one. Dimming body copy is how a scroll effect makes a page harder
+     to read than a static one — the loop diagram carries "where am I", and
+     the prose stays prose. */
+  .system-stage-index {
+    color: var(--text-muted);
+  }
+
+  .system-stage-label {
+    margin-block-start: var(--space-2);
+  }
+
+  .system-stage-question {
+    margin-block-start: var(--space-3);
+    max-inline-size: 26ch;
+  }
+
+  .system-stage-body {
+    margin-block-start: var(--space-4);
+    max-inline-size: var(--container-text);
+  }
+
+  .system-stage-concepts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-block-start: var(--space-6);
+  }
+
+  .system-loop {
+    margin-block-start: var(--space-12);
+    display: grid;
+    gap: var(--space-6);
+    align-items: center;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  @media (width >= 30rem) {
+    .system-loop {
+      grid-template-columns: 11rem minmax(0, 1fr);
+    }
+  }
+
+  .system-loop-svg {
+    inline-size: 100%;
+    max-inline-size: 11rem;
+    block-size: auto;
+    /* Circular geometry is direction-neutral, so no mirrored asset in RTL. */
+    justify-self: center;
+  }
+
+  .system-loop-progress,
+  .system-loop-node {
+    transition:
+      stroke-dashoffset var(--dur-base) var(--ease-precision),
+      r var(--dur-fast) var(--ease-precision),
+      fill var(--dur-fast) var(--ease-precision);
+  }
+
+  .system-loop-legend {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-1) var(--space-4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: var(--size-caption);
+  }
+
+  @media (width >= 64rem) {
+    .system-loop-legend {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  .system-loop-legend li {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-2);
+    color: var(--text-muted);
+    transition: color var(--dur-fast) var(--ease-precision);
+  }
+
+  .system-loop-legend li[data-reached="true"] {
+    color: var(--text-secondary);
+  }
+
+  .system-loop-legend li[data-current="true"] {
+    color: var(--accent);
+  }
+
+  .system-loop-index {
+    color: var(--text-disabled);
+  }
+
+  .system-loop-legend li[data-reached="true"] .system-loop-index {
+    color: var(--accent);
+  }
+
+  .system-loop-close {
+    margin-block-start: var(--space-16);
+    padding-block-start: var(--space-12);
+    border-block-start: 1px solid var(--border-strong);
+  }
+
+  /* --- CONCEPT NODES — EPIC 04 §5 ---------------------------------------
+     Inline, clickable, and never hover-only: a definition that only a mouse
+     can reach is a definition half the readers do not have. */
+
+  .concept {
+    position: relative;
+    display: inline-flex;
+  }
+
+  .concept-trigger {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--space-1);
+    padding-inline: var(--space-3);
+    padding-block: var(--space-1);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-pill);
+    background: none;
+    color: var(--text-secondary);
+    font: inherit;
+    font-size: var(--size-caption);
+    cursor: pointer;
+    transition:
+      color var(--dur-fast) var(--ease-precision),
+      border-color var(--dur-fast) var(--ease-precision);
+  }
+
+  .concept-trigger:hover,
+  .concept-trigger[aria-expanded="true"] {
+    color: var(--text-primary);
+    border-color: var(--accent);
+  }
+
+  .concept-abbr {
+    color: var(--text-muted);
+  }
+
+  .concept-panel {
+    position: absolute;
+    inset-block-start: calc(100% + var(--space-2));
+    inset-inline-start: 0;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    inline-size: max-content;
+    max-inline-size: min(22rem, 80vw);
+    padding: var(--space-4);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-md);
+    background-color: var(--surface-overlay);
+    box-shadow: var(--shadow-overlay);
+    animation: menu-reveal var(--dur-fast) var(--ease-precision);
+  }
+
+  .concept-panel-term {
+    color: var(--text-primary);
+  }
+
+  .concept-panel-body {
+    color: var(--text-secondary);
+  }
+
   /* --- CHART OVERLAY — EPIC 03 §12 --------------------------------------
      The undistorted half of the static renderer. The SVG beneath is stretched
      to fill its box, which is correct for candles and price lines and wrong
