@@ -394,6 +394,152 @@
       }
     }
   },
+  "academy": {
+    "eyebrow": "Free academy",
+    "title": "Learn the framework, then check it against real setups",
+    "lead": "Eight lessons, in order. Each one teaches a concept the rest of this site already uses, shows it on a chart, and points at the setups built from it. Free, no account, nothing to buy.",
+    "startHere": "Start here",
+    "curriculum": "Curriculum",
+    "levelsLabel": "Learning path",
+    "lessonsCount": "{n} lessons",
+    "minutes": "{n} min",
+    "progressLabel": "Your progress",
+    "progressNote": "Progress is kept in this browser only. There is no account and nothing is sent anywhere.",
+    "progressReset": "Reset progress",
+    "markComplete": "Mark as read",
+    "markedComplete": "Read",
+    "notStarted": "Not started",
+    "completedCount": "{done} of {total} read",
+    "backToAcademy": "Back to the academy",
+    "nextLesson": "Next lesson",
+    "previousLesson": "Previous",
+    "prerequisitesLabel": "Read first",
+    "conceptsLabel": "Concepts in this lesson",
+    "setupsLabel": "Setups that use this",
+    "systemLabel": "See it inside the whole process",
+    "systemCta": "The trading system",
+    "takeawaysLabel": "Key takeaways",
+    "endOfPath": "That is the last lesson in this path.",
+    "endOfPathCta": "Open the setup laboratory",
+    "levels": {
+      "foundation": "Foundations",
+      "core": "Core",
+      "applied": "Applied"
+    },
+    "sections": {
+      "explain": "Explain",
+      "visualize": "Visualize",
+      "apply": "Apply",
+      "check": "Check yourself"
+    },
+    "figureCaption": "The same illustrative sequence used across the site, shown at the moment this concept appears.",
+    "lessons": {
+      "market-and-noise": {
+        "title": "The market and the noise",
+        "summary": "Most of what price does is not a signal. The first skill is telling the difference.",
+        "explain": "A market produces movement continuously, and almost none of it is an opportunity. Movement is information about positioning: who had to buy, who had to sell, and where. Treating every move as a signal is not aggression, it is a category error — it mistakes activity for meaning. Everything else in this academy exists to narrow attention down to the small number of moments that carry information you can act on.",
+        "visualize": "On the chart the opening stretch is deliberately unremarkable: price moves, ranges, moves back. Nothing about it says what to do. That is the honest picture of most of a session, and a method that cannot sit through it is not a method.",
+        "apply": "Before looking for an entry, name the environment. Which session is this, what has price done today, and is there a reason to expect participation? If the answer is that nothing is happening, the correct action is to do nothing, and recording that is as much a decision as taking a trade.",
+        "check": "Look at any chart from the last week and mark the moves you would have called signals at the time. Then mark which ones you could have defined by a rule beforehand. The gap between those two counts is the problem this academy is about.",
+        "takeaways": [
+          "Movement is not opportunity.",
+          "Context decides whether a setup is worth looking for.",
+          "Doing nothing is a decision that should be recorded."
+        ]
+      },
+      "market-structure": {
+        "title": "Market structure",
+        "summary": "Direction becomes checkable when highs and lows are read as a sequence rather than a feeling.",
+        "explain": "Structure is the sequence of swing highs and lows, and its value is that it turns direction into something you can be wrong about. A trend is not an impression, it is a series of higher highs and higher lows that either continues or does not. A break of structure is price closing beyond a prior swing in the direction of the trend. A market structure shift is a break against it, and that is the one that defines a change rather than a continuation.",
+        "visualize": "In the sequence you can see a run of higher highs, a pullback that sets a swing low, and then a decisive move through that low. The break is measurable because the low existed beforehand and can be pointed at.",
+        "apply": "Mark the most recent swing high and swing low before you form any opinion. If you cannot mark them, there is no structure to trade, and that is itself an answer. Once marked, a shift is either present or absent — no interpretation required.",
+        "check": "On a chart you have not seen, mark the last three swing points and state which direction structure says the market is in. Then check whether the following move agreed. The point is not to be right; it is to have made a claim that could be checked.",
+        "takeaways": [
+          "Structure turns direction into a rule instead of an impression.",
+          "A break with the trend continues it; a break against it defines a change.",
+          "If the swing points cannot be marked, there is nothing to read."
+        ]
+      },
+      "liquidity": {
+        "title": "Liquidity",
+        "summary": "Price travels toward the places where orders are waiting, not away from them.",
+        "explain": "Liquidity is where resting orders accumulate: above obvious highs, below obvious lows, around levels everyone can see. This is the idea that most reverses the beginner's intuition. An obvious level is not a wall that stops price — it is a reason for price to go there, because that is where the orders that need filling are sitting. Equal highs are not resistance. They are a destination.",
+        "visualize": "The chart shows a level formed by highs at effectively the same price, and then price reaching through it and rejecting. The reach is not a failure of the level; it is the level doing what it was always going to do.",
+        "apply": "Before deciding direction, ask which side is more obvious to everyone else. That side is the more likely draw. This does not tell you to trade it — it tells you where price is being pulled while you are deciding.",
+        "check": "Find two highs at the same price on any chart. Did price eventually trade through them? Note how long it took. The waiting is usually the difficult part, not the recognition.",
+        "takeaways": [
+          "Obvious levels attract price rather than repelling it.",
+          "Equal highs and lows mark pools of resting orders.",
+          "A sweep is the level working, not the level failing."
+        ]
+      },
+      "displacement-and-imbalance": {
+        "title": "Displacement and imbalance",
+        "summary": "Some moves leave a gap behind. That gap is what makes the location specific.",
+        "explain": "Displacement is an impulsive move that separates intent from ordinary movement. Its useful by-product is imbalance: when price moves fast enough, it leaves a range where trading was one-sided, visible as an unfilled gap between one candle's low and another's high. That gap is a fair value gap, and it matters because it converts a direction into a location. Without it you know which way to look; with it you know where to act.",
+        "visualize": "Look at the steep leg in the sequence. The move is fast, the bodies are large, and the space it leaves is not revisited immediately. That untouched space is the imbalance.",
+        "apply": "Use the gap as the place to act from, on the retracement into it, rather than chasing the break. If price never returns, there is no trade — and that is the setup working correctly, not a missed opportunity.",
+        "check": "Find an impulsive move on any chart and check whether it left a gap. Then check whether price returned to it. Both answers are informative; the second one is the one traders skip.",
+        "takeaways": [
+          "Displacement separates intent from ordinary movement.",
+          "The imbalance it leaves converts direction into a location.",
+          "No return to the gap means no trade."
+        ]
+      },
+      "building-a-setup": {
+        "title": "Building a setup",
+        "summary": "A setup is a written specification with conditions, not a pattern you recognise.",
+        "explain": "Context, liquidity and structure together produce a candidate. Alone, none of them is a reason to act: a level without structure is a guess, and structure without context is a rule applied in the wrong environment. A setup is the written statement of which conditions must hold together, and — just as importantly — the point at which it is no longer valid. If it cannot be written down before the session, it is not a setup, it is a memory of one.",
+        "visualize": "The sequence shows the conditions arriving in order: a level, a sweep of it, a structural break, and the imbalance left behind. The setup is the conjunction, not any single element.",
+        "apply": "Write the conditions as a list, then look for that list. The discipline is in the order: the specification comes first, and the chart is checked against it. Reversing that produces a setup that always seems to have been present.",
+        "check": "Take a trade you took recently and try to write its conditions as a specification. If you cannot state what would have made it invalid, it was not a setup.",
+        "takeaways": [
+          "A setup is a conjunction of conditions, never one pattern.",
+          "It must be writable before the session, not after the move.",
+          "If invalidation cannot be stated, there is no specification."
+        ]
+      },
+      "execution": {
+        "title": "Execution",
+        "summary": "Entry is a decision point. It is not an outcome, and a profitable trade was not therefore correct.",
+        "explain": "Execution is the moment analysis becomes a position. The entry is defined by the trigger condition, not by conviction, and it is decided before risk is taken along with the invalidation and the target. The distinction that matters most here is between decision and outcome: a trade that moved in your favour was not correct for that reason, and one that did not was not therefore wrong. Judging execution by results teaches the wrong lesson at exactly the moment it feels most convincing.",
+        "visualize": "The chart shows the entry level marked against the imbalance, with the invalidation above and the target below. All three exist before anything happens.",
+        "apply": "Define entry, invalidation and target before placing the order. If any of the three cannot be specified, the trade is not ready — and reducing size does not fix a missing invalidation.",
+        "check": "Look at your last five trades and check whether entry, stop and target were all defined before entry. The ones where they were not are the ones worth reviewing first.",
+        "takeaways": [
+          "Entry is defined by a trigger, not by conviction.",
+          "All three levels exist before risk is taken.",
+          "A winning trade is not evidence that the decision was correct."
+        ]
+      },
+      "risk": {
+        "title": "Risk",
+        "summary": "Invalidation comes from structure. Size comes from invalidation. Never the other way round.",
+        "explain": "Risk is the one part of a trade fully under control, which is why it is decided first. Invalidation is the price at which the reason for the trade no longer holds, and it is chosen from structure rather than from a comfortable distance. Position size then follows arithmetically: the quantity that makes reaching invalidation cost the predetermined amount. Choosing size first and then placing a stop where that size allows is the most common way a defensible idea becomes an indefensible trade.",
+        "visualize": "On the chart, invalidation sits above the sweep and the target below the displacement. The distance between them is a property of the market's structure, not of what would be convenient.",
+        "apply": "Work in this order every time: find invalidation from structure, decide what the trade may cost, then compute size. If the resulting size is uncomfortably small, the honest conclusion is that this setup does not suit this account right now.",
+        "check": "Take a setup you like and compute the size for a fixed risk amount. If the number surprises you, that surprise is the information.",
+        "takeaways": [
+          "Risk is decided before entry because it is the only controllable part.",
+          "Invalidation is structural, not a preferred distance.",
+          "Size follows the stop; reversing the order breaks the logic."
+        ]
+      },
+      "review-and-data": {
+        "title": "Review and data",
+        "summary": "Review asks whether the process was followed. That is a separate question from whether it won.",
+        "explain": "A trade produces two independent facts: whether the rule was followed, and whether the outcome was positive. Conflating them is how a lucky break becomes a habit and a disciplined loss becomes a doubt. Review separates them. Once enough trades are recorded the same way, the records stop being anecdotes and start describing the process itself — and that description is the only honest basis for changing it. This is where the loop closes: data changes what counts as context next time.",
+        "visualize": "The final frame shows the whole sequence at once. Individually the elements were moments; together they are a process that can be repeated and therefore measured.",
+        "apply": "After each trade, record the specification it matched and whether it was followed, separately from the result. Do not adjust rules on single outcomes — a sample of one describes nothing.",
+        "check": "Classify your last ten trades as rule-followed or not, ignoring profit entirely. The distribution usually explains more than the profit and loss does.",
+        "takeaways": [
+          "Following the rule and winning are independent facts.",
+          "A rule followed on a loss is a good trade.",
+          "One trade is an anecdote; the sample is the evidence."
+        ]
+      }
+    }
+  },
   "viz": {
     "disclosures": {
       "synthetic": "Illustrative diagram. Synthetic price data, not a trade record and not a performance claim.",

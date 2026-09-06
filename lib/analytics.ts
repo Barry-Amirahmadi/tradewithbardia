@@ -35,7 +35,11 @@ export type AnalyticsEvent =
   // never display strings.
   | "setup_open"
   | "setup_filter"
-  | "replay_play";
+  | "replay_play"
+  // Free Academy (EPIC 06). Ids are canonical lesson and concept ids.
+  | "academy_view"
+  | "academy_lesson_open"
+  | "academy_lesson_complete";
 
 /**
  * Payloads carry identifiers and UI state only. No free text from a user, no

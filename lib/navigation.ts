@@ -63,10 +63,10 @@ export const primaryNav: readonly NavNode[] = [
   {
     id: "learn",
     labelKey: "learn",
-    segment: "learn",
-    status: "placeholder",
+    segment: "academy",
+    status: "active",
     children: [
-      { id: "learn.academy", labelKey: "academy", segment: "academy", status: "planned" },
+      { id: "learn.academy", labelKey: "academy", status: "planned" },
       { id: "learn.foundations", labelKey: "foundations", status: "planned" },
       { id: "learn.structure", labelKey: "marketStructure", status: "planned" },
       { id: "learn.liquidity", labelKey: "liquidity", status: "planned" },
@@ -157,7 +157,7 @@ export function hrefFor(
     : `/${locale}/${parent.segment}/${node.segment}`;
 }
 
-export const ctaHref = (locale: Locale): string => `/${locale}/learn`;
+export const ctaHref = (locale: Locale): string => `/${locale}/academy`;
 
 /**
  * ACTIVE ROUTE DETECTION — §7.

@@ -8,8 +8,9 @@ import { localeDirection, withLocale, locales, type Locale } from "@/lib/i18n/co
 import type { Dictionary } from "@/lib/i18n/dictionary-type";
 import { useDismissableLayer } from "@/lib/interaction/use-dismissable-layer";
 import { prefersReducedMotion } from "@/lib/motion/frame-loop";
+import { createAcademyProvider } from "@/lib/search/academy-provider";
 import { createConceptProvider } from "@/lib/search/concept-provider";
-import { loadConceptIndex, loadSetupIndex } from "@/lib/search/indexes";
+import { loadAcademyIndex, loadConceptIndex, loadSetupIndex } from "@/lib/search/indexes";
 import { createSetupProvider } from "@/lib/search/setup-provider";
 import {
   createCommandProvider,
@@ -103,6 +104,7 @@ export default function CommandPalette({ open, onClose, locale, nav }: Props) {
       // for the EPIC 04 defect this exists to prevent.
       registerSearchProvider(createConceptProvider(() => loadConceptIndex(locale))),
       registerSearchProvider(createSetupProvider(() => loadSetupIndex(locale))),
+      registerSearchProvider(createAcademyProvider(() => loadAcademyIndex(locale))),
     ];
     return () => unregister.forEach((fn) => fn());
   }, [nav, locale]);

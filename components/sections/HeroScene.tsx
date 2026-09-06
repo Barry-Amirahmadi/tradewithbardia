@@ -310,7 +310,7 @@ export default function HeroScene({
               </h1>
               <p className="mt-6 max-w-[38ch] type-lead">{hero.lead}</p>
               <div className="mt-8 flex flex-wrap items-center gap-3">
-                <Link href={`/${locale}/learn`} className="btn btn-primary">
+                <Link href={`/${locale}/academy`} className="btn btn-primary">
                   {hero.ctaPrimary}
                 </Link>
                 <Link href={`/${locale}/systems`} className="btn btn-ghost">
@@ -342,7 +342,7 @@ export default function HeroScene({
                   not emphasis, it is noise. */}
               {cinematic ? (
                 <div className="mt-8">
-                  <Link href={`/${locale}/learn`} className="btn btn-primary">
+                  <Link href={`/${locale}/academy`} className="btn btn-primary">
                     {hero.ctaPrimary}
                   </Link>
                 </div>

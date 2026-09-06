@@ -95,7 +95,9 @@ describe("active route detection", () => {
 
   it("resolves the active id, or null on the home route", () => {
     assert.equal(activeNavId("/fa/journal"), "journal");
-    assert.equal(activeNavId("/en/learn/foundations"), "learn");
+    // The Learn destination is served at /academy as of EPIC 06; the nav id
+    // stays `learn` because that is the label key, not the route.
+    assert.equal(activeNavId("/en/academy/liquidity"), "learn");
     assert.equal(activeNavId("/en"), null);
     assert.equal(activeNavId("/"), null);
   });
@@ -107,7 +109,7 @@ describe("active route detection", () => {
     assert.ok(child !== undefined);
     // Every child is currently planned, so it has no segment and can never be
     // active — asserted so this stays true when segments are added.
-    assert.equal(isNavChildActive("/en/learn/academy", learn, child), child.segment !== undefined);
+    assert.equal(isNavChildActive("/en/academy/academy", learn, child), child.segment !== undefined);
   });
 });
 

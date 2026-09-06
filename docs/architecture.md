@@ -370,6 +370,78 @@ cache so a later keystroke retries. This is what makes a fourth and fifth
 content domain free: `ConceptProvider`, `SetupProvider` and everything after
 them scale without serializing any domain into any route.
 
+## The free academy
+
+EPIC 06. Eight lessons in one ordered path, and the third consumer of the
+EPIC 04 concept model.
+
+### Lessons reference concepts, never redefine them
+
+`lib/trading/lessons.ts`. A lesson holds canonical `TradingConceptId` values
+and no definitions of its own — the Academy is the fourth surface that could
+have started a rival vocabulary and did not. A dangling concept id throws at
+module load.
+
+Two edges are **derived rather than authored**, because a hand-written copy of
+either would drift:
+
+- **Related setups** come from `setupsForConcept()`. A lesson lists no setup
+  ids; it asks which setups use the concepts it teaches. Adding a setup that
+  uses `liquidity` makes it appear in the liquidity lesson with no edit.
+- **Curriculum validity** is checked against the concept graph. A lesson
+  declares which lessons precede it, and a load-time assertion verifies that
+  ordering is compatible with the canonical concept prerequisites: if a concept
+  requires another, the lesson teaching it may not come before the lesson
+  teaching the requirement. The two graphs cannot disagree about what has to be
+  understood first.
+
+Both are asserted in tests as well as at load, so the failure is legible from
+either direction.
+
+### Teaching visually without a second chart engine
+
+The Academy adds no renderer, no scene data and no canvas. A lesson renders the
+existing `heroScene` through the existing **server** static renderer at the
+beat where its concept appears — `visualProgress` on the lesson record. The
+liquidity lesson shows the sweep forming; the risk lesson shows entry, stop and
+target together.
+
+The consequences are all budget wins: zero canvas instances across the whole
+Academy, zero renderer lifecycles, zero client JavaScript for the figure, and
+one server-rendered chart per document. A lesson page is 15.5 kB of SVG rather
+than the hero's 23.4 kB, because fewer candles are revealed at a mid-scene
+progress.
+
+The semantic explanation stays in HTML. The figure is an aid; the lesson is
+readable, crawlable and translatable without it.
+
+### Progress is local, and says so
+
+`lib/academy/progress.ts` is `localStorage` behind an external-store interface.
+There is no account and no network call, and the UI states that in words rather
+than implying a synced profile. The wording is "read", never "completed" or
+"mastered", and there is no certificate, badge or score — there is no
+assessment behind them.
+
+The store shape is what makes the future cheap: when accounts exist,
+`subscribe`/`snapshot` are backed by a server and no lesson component changes.
+
+### Search
+
+A fourth provider, registered exactly like the third and loaded exactly like
+the third. Lessons are the largest prose in the product and none of it is
+serialized into any route. A lesson is findable by the **concept** it teaches,
+not only by its title — searching "sweep" returns the liquidity lesson because
+both name the same canonical id.
+
+### Routing
+
+`/[locale]/academy` and `/[locale]/academy/[slug]`, both static. The `learn`
+navigation node now points at the `academy` segment and is `active`; its id
+stays `learn` because that is the dictionary label key, not the route. The
+generic `[section]` route excludes every segment that owns a dedicated route,
+so one URL never has two builders.
+
 ## Motion
 
 One `requestAnimationFrame` loop for the whole application
