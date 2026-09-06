@@ -266,42 +266,44 @@ describe("concept search provider", () => {
       scrollTop: en.nav.cmdScrollTop,
     },
   };
-  const provider = createConceptProvider(en.concepts, en.system);
+  // A loader, not data — the provider is lazy as of EPIC 05 §13. Tests supply
+  // it synchronously rather than depending on bundler behaviour.
+  const provider = createConceptProvider(async () => ({
+    concepts: en.concepts,
+    system: en.system,
+  }));
 
-  it("returns canonical concept ids, not display strings", () => {
-    const results = provider.search("liquidity", ctx) as { id: string }[];
+  it("returns canonical concept ids, not display strings", async () => {
+    const results = await provider.search("liquidity", ctx);
     assert.ok(results.some((r) => r.id === "concept.liquidity"));
   });
 
-  it("finds a concept by its Latin abbreviation", () => {
+  it("finds a concept by its Latin abbreviation", async () => {
     // A Persian reader types MSS in Latin; the term itself is Persian.
-    const results = provider.search("MSS", ctx) as { id: string }[];
+    const results = await provider.search("MSS", ctx);
     assert.ok(results.some((r) => r.id === "concept.mss"));
   });
 
-  it("links a mechanism to the stage where it is actually explained", () => {
-    const results = provider.search("sweep", ctx) as {
-      id: string;
-      href?: string;
-    }[];
+  it("links a mechanism to the stage where it is actually explained", async () => {
+    const results = await provider.search("sweep", ctx);
     const hit = results.find((r) => r.id === "concept.sweep");
     assert.ok(hit !== undefined);
-    assert.equal(hit.href, "/en#system-liquidity");
+    assert.equal(hit.href, "/en/systems#system-liquidity");
   });
 
-  it("locale-prefixes the anchor", () => {
-    const fahit = (
-      createConceptProvider(fa.concepts, fa.system).search("نقدینگی", {
-        ...ctx,
-        locale: "fa",
-      }) as { id: string; href?: string }[]
-    ).find((r) => r.id === "concept.liquidity");
-    assert.ok(fahit !== undefined);
-    assert.equal(fahit.href, "/fa#system-liquidity");
+  it("locale-prefixes the anchor", async () => {
+    const faProvider = createConceptProvider(async () => ({
+      concepts: fa.concepts,
+      system: fa.system,
+    }));
+    const results = await faProvider.search("نقدینگی", { ...ctx, locale: "fa" });
+    const hit = results.find((r) => r.id === "concept.liquidity");
+    assert.ok(hit !== undefined);
+    assert.equal(hit.href, "/fa/systems#system-liquidity");
   });
 
-  it("returns nothing for a genuine miss rather than inventing a result", () => {
-    const results = provider.search("guaranteed profit", ctx) as unknown[];
+  it("returns nothing for a genuine miss rather than inventing a result", async () => {
+    const results = await provider.search("guaranteed profit", ctx);
     assert.equal(results.length, 0);
   });
 });

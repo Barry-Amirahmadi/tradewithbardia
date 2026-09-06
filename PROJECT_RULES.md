@@ -205,6 +205,21 @@ press-based path that works without hovering at all. `pointerenter` and
 `focusin` both fire before the `click` they precede, so opening on either one
 turns a tap into open-then-close.
 
+## 8b. Payload is route-scoped
+
+A content dataset belongs to the route that renders it. Threading one through a
+shared client component — a nav, a footer, a layout — serializes it into every
+document on the site, including pages that render none of it. This is not
+hypothetical: the EPIC 04 concept dictionary reached every route that way, 18.2
+kB of a 24.8 kB placeholder page.
+
+Search providers therefore receive a **loader**, never data. Nothing is fetched
+until someone searches.
+
+Renderer instances follow the same discipline: at most one active per page,
+mounted on intersection, and at most one server-rendered full-fidelity chart
+fallback per document. Cards get a glyph, not a chart.
+
 ## 9. Definition of done
 
 A feature is not finished because it renders. It is finished when:

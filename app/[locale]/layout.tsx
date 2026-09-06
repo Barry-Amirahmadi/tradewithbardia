@@ -73,12 +73,7 @@ export default async function LocaleLayout({
   return (
     <div lang={typedLocale} dir={localeDirection[typedLocale]}>
       <SmoothScroll />
-      <Navbar
-        locale={typedLocale}
-        nav={dictionary.nav}
-        concepts={dictionary.concepts}
-        system={dictionary.system}
-      />
+      <Navbar locale={typedLocale} nav={dictionary.nav} />
       {children}
       <Footer locale={typedLocale} dictionary={dictionary} />
     </div>

@@ -30,7 +30,12 @@ export type AnalyticsEvent =
   // which differ by locale and would split one event into two.
   | "system_view"
   | "system_stage_enter"
-  | "concept_open";
+  | "concept_open"
+  // Setup Laboratory (EPIC 05). Ids are setup slugs and filter dimensions,
+  // never display strings.
+  | "setup_open"
+  | "setup_filter"
+  | "replay_play";
 
 /**
  * Payloads carry identifiers and UI state only. No free text from a user, no

@@ -80,7 +80,7 @@ export const primaryNav: readonly NavNode[] = [
     id: "systems",
     labelKey: "systems",
     segment: "systems",
-    status: "placeholder",
+    status: "active",
     children: [
       { id: "systems.overview", labelKey: "tradingSystem", status: "planned" },
       { id: "systems.context", labelKey: "marketContext", status: "planned" },
@@ -95,7 +95,7 @@ export const primaryNav: readonly NavNode[] = [
     id: "setups",
     labelKey: "setups",
     segment: "setups",
-    status: "placeholder",
+    status: "active",
     children: [
       { id: "setups.lab", labelKey: "setupLab", status: "planned" },
       { id: "setups.all", labelKey: "allSetups", status: "planned" },

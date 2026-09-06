@@ -8,44 +8,55 @@ commands are below. Automating it belongs with CI, not with Phase 0.
 
 ---
 
-## Measured baseline (2026-09-06, EPIC 04)
+## Measured baseline (2026-09-06, EPIC 05)
 
-| Metric | Measured | Budget | Headroom |
-|---|---|---|---|
-| Initial JS, gzipped (`/en`) | **190 KB** | **220 KB** | 30 KB |
-| Initial JS, raw | 600 KB | 700 KB | 100 KB |
-| Scripts on first load | 10 | 12 | 2 |
-| HTML document, raw | **109 KB** | 110 KB | **1 KB — see below** |
-| CSS, gzipped | 10.5 KB | 25 KB | 14.5 KB |
-| Fonts, total woff2 | 131 KB (3 faces) | 140 KB | 9 KB |
-| Route chunk, per section page | < 5 KB | 40 KB | — |
-| Renderer chunk (canvas) | 3.4 KB | 25 KB | 21.6 KB |
-| Command palette chunk | 5 KB | 25 KB | 20 KB |
-| Smooth scroll (Lenis) | 32 KB | 40 KB | 8 KB |
+**Transfer and parse are separate budgets.** Until EPIC 05 this file stated one
+raw-byte ceiling for the document, and the EPIC 04 review showed that was
+measuring the wrong thing: the home page read 109 kB raw against a 110 kB
+budget and looked like it was out of room, while the bytes that actually
+crossed the network were 21.9 kB. Raw size still matters — it is what a weak
+phone parses — but it is not the transfer cost, and conflating them produced a
+false alarm.
 
-EPIC 04 added the Trading System Story — nine stages, nineteen concepts and
-their definitions in two languages — for **+2.3 KB** of initial JS. The section
-is a server component, so nearly all of its weight is HTML rather than
-JavaScript; the only client code is the scroll wiring, the loop figure and the
-concept nodes.
+### Per route
 
-**The HTML budget is now the binding constraint: 109 KB against 110 KB.** Two
-things drive it, and both are deliberate. The hero's static SVG fallback is
-inlined so the §50 chain is real rather than decorative, and the system
-section's prose is server-rendered so it survives with JavaScript off (§25).
-Next also inlines the RSC payload, so text content is effectively counted
-twice.
+| Route | Raw | Raw budget | Gzip | Gzip budget |
+|---|---|---|---|---|
+| `/en` home | **86 kB** | 110 kB | **17.5 kB** | 30 kB |
+| `/en/systems` | 45 kB | 90 kB | 8.8 kB | 25 kB |
+| `/en/setups` library | 41 kB | 90 kB | 9.8 kB | 25 kB |
+| `/en/setups/[slug]` | 44 kB | 90 kB | 10.0 kB | 25 kB |
+| `/en/about` placeholder | 19 kB | 40 kB | 4.7 kB | 15 kB |
 
-This is the first budget in the project with no meaningful headroom. Before the
-next section ships, one of these has to happen: reduce the hero fallback's
-candle count (the cheapest, and already the standing recommendation below),
-move the system section to its own route so the home document carries one of
-the two, or raise the budget with a measured argument for why 110 KB was the
-right number in the first place.
+The home page fell from 109 kB to 86 kB in this epic because the Trading System
+Story moved to `/systems` and home kept a condensed teaser (§22). Splitting the
+document was the headroom fix the EPIC 04 review recommended.
 
-Most of the 188 KB is React plus the Next runtime. The application's own code
-is a small fraction of it, which is the intended shape: the heavy parts of this
-product are content and canvas work, not framework.
+### Shared
+
+| Metric | Measured | Budget |
+|---|---|---|
+| Initial JS, gzipped | **188 KB** | 220 KB |
+| Renderer chunk (canvas) | 3.4 KB | 25 KB |
+| Command palette chunk | 5 KB | 25 KB |
+| Search index chunk (per locale) | lazy, on first search | 40 KB |
+| Fonts, total woff2 | 131 KB (3 faces) | 140 KB |
+
+### Renderer and chart budgets — EPIC 05
+
+| Constraint | Rule | Measured |
+|---|---|---|
+| Active renderer instances per page | **≤ 1** | library 0, detail 1 |
+| SSR'd full-fidelity chart fallbacks | **≤ 1 per document** | home 1 (hero), everywhere else 0 |
+| Card preview payload | ≤ 1 kB per card | ~340 B glyph |
+| Setup dataset in a shared client component | **forbidden** | route-scoped |
+
+The last row is the EPIC 04 defect stated as a rule. Threading the concept
+dictionary through `Navbar` put 18.2 kB into every route's RSC payload,
+including placeholder pages that render none of it. Search providers now
+receive a **loader** rather than data (`lib/search/lazy.ts`), so nothing is
+fetched until someone searches and nothing is serialized into any document.
+Verified: `/en/about` contains no concept or setup copy at all.
 
 ### Why the HTML is large
 

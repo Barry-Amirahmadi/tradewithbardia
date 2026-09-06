@@ -1,11 +1,8 @@
 import type { Dictionary } from "../i18n/dictionary-type";
 import { getConcept, tradingConceptIds } from "../trading/concepts";
+import { lazyProvider, type SearchIndexLoader } from "./lazy";
 import { systemStageIds, type SystemStageId } from "../trading/system-stages";
-import {
-  scoreMatch,
-  type SearchProvider,
-  type SearchResult,
-} from "./provider";
+import { scoreMatch, type SearchProvider, type SearchResult } from "./provider";
 
 /**
  * TRADING CONCEPTS AS SEARCH RESULTS — master prompt §19.
@@ -29,23 +26,27 @@ const stageIds = new Set<string>(systemStageIds);
 
 /** Where a concept is currently explained, or null if nowhere yet. */
 function anchorFor(id: string, locale: string): string | undefined {
-  if (stageIds.has(id)) return `/${locale}#system-${id}`;
+  // The canonical home of the story is /systems as of EPIC 05 §22.
+  if (stageIds.has(id)) return `/${locale}/systems#system-${id}`;
   const parent = getConcept(id as never).parent;
   // A mechanism is explained inside its parent stage; a parent that is not
   // itself a stage has no page yet, and gets no link rather than a wrong one.
   if (parent !== undefined && stageIds.has(parent)) {
-    return `/${locale}#system-${parent}`;
+    return `/${locale}/systems#system-${parent}`;
   }
   return undefined;
 }
 
+/** The copy this provider indexes. Loaded on first search, never sooner. */
+export interface ConceptIndex {
+  concepts: Dictionary["concepts"];
+  system: Dictionary["system"];
+}
+
 export function createConceptProvider(
-  concepts: Dictionary["concepts"],
-  system: Dictionary["system"],
+  load: SearchIndexLoader<ConceptIndex>,
 ): SearchProvider {
-  return {
-    id: "concepts",
-    search(query, context) {
+  return lazyProvider<ConceptIndex>("concepts", load, ({ concepts, system }, query, context) => {
       const results: SearchResult[] = [];
 
       for (const id of tradingConceptIds) {
@@ -77,5 +78,5 @@ export function createConceptProvider(
 
       return results;
     },
-  };
+  );
 }

@@ -247,6 +247,153 @@
       "definition": "The quantity chosen so that reaching invalidation costs the predetermined amount."
     }
   },
+  "lab": {
+    "eyebrow": "Setup laboratory",
+    "title": "A library of written hypotheses",
+    "lead": "Each setup is a specification: the conditions that have to hold, and the point at which it is wrong. None of them carry performance figures, because none of them have been tested yet.",
+    "resultsOne": "1 setup",
+    "resultsMany": "{n} setups",
+    "empty": "No setup matches these filters.",
+    "clear": "Clear filters",
+    "filtersLabel": "Filter the library",
+    "openFilters": "Filters",
+    "all": "All",
+    "readSetup": "Open specification",
+    "backToLibrary": "Back to the library",
+    "conceptsLabel": "Concepts used",
+    "prerequisitesLabel": "Understand first",
+    "metaLabel": "Applies to",
+    "replayLabel": "Replay",
+    "replayPlay": "Play",
+    "replayPause": "Pause",
+    "replayRestart": "Restart",
+    "replayScrub": "Replay position",
+    "evidenceLabel": "Evidence",
+    "dimensions": {
+      "instrument": "Instrument",
+      "session": "Session",
+      "timeframe": "Timeframe",
+      "difficulty": "Level",
+      "concept": "Concept"
+    },
+    "instruments": {
+      "indices": "Indices",
+      "metals": "Metals",
+      "forex": "Forex"
+    },
+    "sessions": {
+      "asia": "Asia",
+      "london": "London",
+      "newYork": "New York"
+    },
+    "timeframes": {
+      "m1": "1m",
+      "m5": "5m",
+      "m15": "15m",
+      "h1": "1h",
+      "h4": "4h"
+    },
+    "difficulties": {
+      "foundation": "Foundation",
+      "intermediate": "Intermediate",
+      "advanced": "Advanced"
+    },
+    "evidence": {
+      "conceptual": "Conceptual. A written specification, not yet tested against data.",
+      "demo": "Demo data. Placeholder values standing in for a source that is not connected.",
+      "insufficient": "Insufficient sample. Tested, but below the minimum for any claim.",
+      "verified": "Verified. Reconciled and sample-checked."
+    },
+    "evidenceShort": {
+      "conceptual": "Conceptual",
+      "demo": "Demo data",
+      "insufficient": "Insufficient sample",
+      "verified": "Verified"
+    },
+    "sections": {
+      "context": "Context",
+      "liquidity": "Liquidity",
+      "structure": "Structure",
+      "trigger": "Trigger",
+      "entry": "Entry",
+      "invalidation": "Invalidation",
+      "risk": "Risk",
+      "review": "Review"
+    },
+    "replayStages": {
+      "market": "Market",
+      "context": "Context",
+      "liquidity": "Liquidity",
+      "structure": "Structure",
+      "trigger": "Trigger",
+      "entry": "Entry",
+      "invalidation": "Invalidation",
+      "outcome": "Outcome",
+      "review": "Review"
+    },
+    "items": {
+      "liquidity-sweep-reversal": {
+        "title": "Liquidity sweep reversal",
+        "purpose": "A level everyone can see is taken, and the move that follows breaks structure in the opposite direction.",
+        "context": "A market that has been trending into an obvious high or low, with enough session time left for a reaction to develop.",
+        "liquidity": "A clear pool: equal highs, a prior session high, or a swing everybody is watching. The more obvious it is, the better it works as a destination.",
+        "structure": "Prior swing structure must be intact before the sweep, so the break afterwards is measurable rather than a matter of opinion.",
+        "trigger": "Price trades through the level and closes back inside, then displaces through the opposing swing point. Both halves are required.",
+        "entry": "The imbalance left by the displacement, entered on the retracement into it rather than chased at the break.",
+        "invalidation": "Above the sweep high, or below the sweep low. If price reclaims the level the reading was wrong, and nothing about it needs reinterpreting.",
+        "risk": "Sized so that reaching invalidation costs the predetermined amount. The distance is defined by the sweep, never by a preferred position size.",
+        "review": "Was the level genuinely obvious beforehand, or obvious only afterwards? That question separates this setup from hindsight."
+      },
+      "session-open-displacement": {
+        "title": "Session open displacement",
+        "purpose": "The first decisive move after a session opens, taken at the imbalance it leaves behind.",
+        "context": "The opening window of a session with real participation. Outside that window the same pattern has a different meaning.",
+        "liquidity": "Liquidity built during the quiet period before the open, in the range that formed while nothing was trading.",
+        "structure": "No structural read is required before the open. The displacement itself creates the structure this setup uses.",
+        "trigger": "An impulsive move away from the pre-open range that leaves an unfilled gap. Movement without imbalance does not qualify.",
+        "entry": "The gap, on the first return into it. If price does not return there is no trade, and waiting is the setup working correctly.",
+        "invalidation": "The far side of the gap. A fill means the imbalance is resolved and the reason for the location is gone.",
+        "risk": "Tighter than most setups because the invalidation is close, which raises position size. Size still follows the stop, never the other way round.",
+        "review": "Did the move actually displace, or was it a wide range bar in slow conditions? Recording that distinction is what makes the sample usable later."
+      },
+      "equal-highs-draw": {
+        "title": "Equal highs as a draw",
+        "purpose": "Two highs at the same price are not resistance. They are a destination.",
+        "context": "A range or a slow trend where price has printed the same high more than once without breaking away.",
+        "liquidity": "The equal highs themselves. Orders rest above them, which is what gives price a reason to travel there.",
+        "structure": "Structure matters only as confirmation that the market is not already in a decisive move away from the level.",
+        "trigger": "Price beginning to move toward the level rather than away from it, in a session with enough time left to reach it.",
+        "entry": "Positional, into the draw. This is a directional bias rather than a precise trigger, and it is described that way on purpose.",
+        "invalidation": "A close beyond the opposite side of the range. At that point the equal highs are no longer the nearest draw.",
+        "risk": "Wider stop, smaller size. The trade-off is explicit: a positional idea cannot be given an intraday stop and still make sense.",
+        "review": "Did price reach the level at all? A setup that identifies a destination is judged on whether the destination was reached, not on the entry."
+      },
+      "structure-shift-continuation": {
+        "title": "Structure shift continuation",
+        "purpose": "A break in the direction of the existing trend, read as continuation rather than reversal.",
+        "context": "An established trend with at least two confirmed swings in the same direction. Without that, the break has nothing to continue.",
+        "liquidity": "Liquidity resting beneath the most recent higher low, or above the most recent lower high, in the pullback that precedes the break.",
+        "structure": "The defining element. A break of structure in the trend direction, closed rather than wicked, measured against a swing that was there beforehand.",
+        "trigger": "The close beyond the prior swing point, with the pullback that preceded it still intact.",
+        "entry": "The retracement toward the broken level, which is now the nearest reference rather than a barrier.",
+        "invalidation": "Beneath the low that produced the break. Losing it means the trend read is no longer supported by structure.",
+        "risk": "Straightforward, because the invalidation is structural and does not need to be chosen. That is the argument for this setup over a discretionary entry.",
+        "review": "Was the trend real at the point of entry, or two swings inside a range? Most losses on this setup are context failures, not trigger failures."
+      },
+      "range-to-expansion": {
+        "title": "Range to expansion",
+        "purpose": "A defined range, then the move that leaves it. The setup is the transition, not the range.",
+        "context": "An extended balanced period, usually across a quiet session, with a range whose edges have been respected more than once.",
+        "liquidity": "Both edges of the range hold liquidity. Which side is taken first is information, not noise.",
+        "structure": "Inside the range, structure is meaningless. It becomes readable only once one side is left behind.",
+        "trigger": "A decisive move out of the range that does not immediately return: displacement away from balance rather than another test of an edge.",
+        "entry": "On the first retracement toward the range edge that was broken, treating it as the new reference.",
+        "invalidation": "A return inside the range. If balance is restored the expansion did not happen and the premise is void.",
+        "risk": "Position sizing is the hard part here. The stop is far by construction, so this setup is often correct and still unsuitable for the account.",
+        "review": "How long was the range, and did that predict anything about the move? This is the setup where recording the context pays for itself."
+      }
+    }
+  },
   "viz": {
     "disclosures": {
       "synthetic": "Illustrative diagram. Synthetic price data, not a trade record and not a performance claim.",

@@ -1934,6 +1934,316 @@
     color: var(--text-secondary);
   }
 
+  /* --- SETUP LABORATORY — EPIC 05 §6, §7, §15, §16 ----------------------
+     A research index, not a product grid. No shadows, no lift-on-hover, no
+     badge colours implying quality — the only status a card carries is what
+     is known about the setup. */
+
+  .setup-lab-header { margin-block-end: var(--space-16); }
+
+  .setup-lab {
+    display: grid;
+    gap: var(--space-12);
+  }
+
+  @media (width >= 64rem) {
+    .setup-lab {
+      grid-template-columns: 16rem minmax(0, 1fr);
+      gap: var(--space-16);
+      align-items: start;
+    }
+    .setup-filters {
+      position: sticky;
+      inset-block-start: calc(var(--nav-h-scrolled) + var(--space-8));
+    }
+  }
+
+  .setup-filters {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+    margin: 0;
+  }
+
+  .setup-filter { border: 0; margin: 0; padding: 0; }
+  .setup-filter legend { padding: 0; color: var(--text-muted); }
+
+  .setup-filter-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-block-start: var(--space-3);
+  }
+
+  .setup-chip { display: inline-flex; cursor: pointer; }
+
+  /* The radio stays in the accessibility tree and keeps arrow-key group
+     behaviour; only its default painting is replaced. */
+  .setup-chip input {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .setup-chip span {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--space-2);
+    padding-inline: var(--space-3);
+    padding-block: var(--space-1);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-pill);
+    color: var(--text-secondary);
+    font-size: var(--size-caption);
+    transition:
+      color var(--dur-fast) var(--ease-precision),
+      border-color var(--dur-fast) var(--ease-precision);
+  }
+
+  .setup-chip input:checked + span {
+    color: var(--text-primary);
+    border-color: var(--accent);
+  }
+
+  .setup-chip input:focus-visible + span {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .setup-chip-count { color: var(--text-disabled); }
+
+  .setup-clear {
+    margin-inline-start: var(--space-3);
+    border: 0;
+    background: none;
+    color: var(--accent);
+    font: inherit;
+    font-size: var(--size-caption);
+    cursor: pointer;
+    text-decoration: underline;
+  }
+
+  .setup-grid {
+    display: grid;
+    gap: var(--space-6);
+    margin: var(--space-6) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (width >= 48rem) {
+    .setup-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+
+  .setup-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    block-size: 100%;
+    padding: var(--space-6);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    background-color: var(--surface);
+    transition: border-color var(--dur-fast) var(--ease-precision);
+  }
+
+  .setup-card:hover,
+  .setup-card:focus-within { border-color: var(--border-strong); }
+
+  .setup-card-link {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .setup-preview {
+    inline-size: 100%;
+    block-size: 3.5rem;
+    color: var(--accent);
+    opacity: 0.75;
+  }
+
+  .setup-card-purpose { margin: 0; font-size: var(--size-caption); }
+
+  .setup-evidence {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--space-3);
+    margin: 0;
+  }
+
+  /* Evidence is never green. A conceptual setup is not a success state, and
+     colouring it like one would be the visual version of a fake statistic. */
+  .setup-evidence[data-evidence="conceptual"],
+  .setup-evidence[data-evidence="demo"] { color: var(--text-muted); }
+  .setup-evidence[data-evidence="insufficient"] { color: var(--text-secondary); }
+  .setup-evidence[data-evidence="verified"] { color: var(--accent); }
+
+  .setup-meta,
+  .setup-concepts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    color: var(--text-muted);
+  }
+
+  .setup-concepts li {
+    padding-inline: var(--space-2);
+    padding-block: 2px;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+  }
+
+  .setup-empty { margin-block-start: var(--space-8); color: var(--text-muted); }
+
+  /* --- SETUP DETAIL ------------------------------------------------------ */
+
+  .setup-detail-header { margin-block-start: var(--space-8); }
+
+  .setup-detail-meta { margin-block-start: var(--space-12); }
+
+  .setup-detail-meta dl {
+    display: grid;
+    gap: var(--space-6);
+    margin: 0;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @media (width >= 48rem) {
+    .setup-detail-meta dl { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  }
+
+  .setup-detail-meta dt { color: var(--text-muted); }
+  .setup-detail-meta dd { margin: var(--space-2) 0 0; }
+
+  .setup-concepts-block { margin-block-start: var(--space-16); }
+
+  .setup-concept-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-block-start: var(--space-4);
+  }
+
+  .setup-spec {
+    margin: var(--space-16) 0 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-12);
+  }
+
+  .setup-spec-item {
+    border-block-start: 1px solid var(--border-subtle);
+    padding-block-start: var(--space-6);
+  }
+
+  .setup-spec-index { color: var(--text-muted); margin: 0 0 var(--space-2); }
+
+  /* --- REPLAY — EPIC 05 §9 ---------------------------------------------- */
+
+  .replay { margin-block-start: var(--space-16); }
+
+  .replay-frame {
+    position: relative;
+    inline-size: 100%;
+    block-size: 42svh;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    background-color: var(--surface);
+    overflow: hidden;
+  }
+
+  @media (width >= 64rem) {
+    .replay-frame { block-size: 56svh; }
+  }
+
+  /* Holds the frame space before the renderer mounts, so scrolling the figure
+     into view never shifts the page. */
+  .replay-placeholder { position: absolute; inset: 0; }
+
+  .replay-caption {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    margin-block-start: var(--space-4);
+  }
+
+  .replay-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .replay-scrub { flex: 1 1 12rem; display: flex; }
+  .replay-scrub input { inline-size: 100%; accent-color: var(--accent); }
+
+  .replay-stages {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .replay-stages button {
+    display: inline-flex;
+    align-items: center;
+    padding-inline: var(--space-3);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-pill);
+    background: none;
+    color: var(--text-muted);
+    font: inherit;
+    font-size: var(--size-caption);
+    cursor: pointer;
+    /* A 44px touch target, per EPIC 02 (§16, §18). */
+    min-block-size: 2.75rem;
+  }
+
+  .replay-stages button[data-active="true"] {
+    color: var(--text-primary);
+    border-color: var(--accent);
+  }
+
+  /* --- SYSTEM TEASER — EPIC 05 §22 -------------------------------------- */
+
+  .system-teaser {
+    border-block-start: 1px solid var(--border-subtle);
+    background-color: var(--surface);
+    padding-block: var(--space-32);
+  }
+
+  .system-teaser-stages {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3) var(--space-6);
+    margin: var(--space-12) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .system-teaser-stages li {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-2);
+    color: var(--text-secondary);
+  }
+
+  .system-teaser-index,
+  .system-teaser-loop { color: var(--accent); }
+
   /* --- CHART OVERLAY — EPIC 03 §12 --------------------------------------
      The undistorted half of the static renderer. The SVG beneath is stretched
      to fill its box, which is correct for candles and price lines and wrong

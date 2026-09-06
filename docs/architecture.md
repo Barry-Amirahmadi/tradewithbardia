@@ -305,6 +305,71 @@ reads as reached, the loop shows closed, and nothing is sampled.
   Dictionary will later return richer results for the same ids rather than a
   parallel set.
 
+## The setup laboratory
+
+EPIC 05. A library of written hypotheses, and the first surface to consume the
+EPIC 04 concept model rather than extend it.
+
+### The setup model
+
+`lib/trading/setups.ts`. A setup references canonical `TradingConceptId`
+values and never defines its own — a reference to a concept that does not exist
+throws at module load, and a test asserts the same property.
+
+Three things the model does deliberately:
+
+- **Evidence is required, with no default.** Every setup declares
+  `conceptual`, `demo`, `insufficient` or `verified`. Nothing can render
+  without stating what is known about it.
+- **There is nowhere to put a performance number.** No win rate, expectancy or
+  drawdown field exists, so a component cannot display one by accident. A test
+  asserts the model never grows one.
+- **Copy lives in the dictionary**, keyed by setup id, so a setup is one object
+  in every language.
+
+Filter dimensions are derived by `filterDimensions()`, which reads the data and
+drops any dimension with fewer than two values. No component hardcodes an
+instrument, session or timeframe, so adding a setup that trades a new session
+makes the filter appear on its own.
+
+### Rendering: one instance, and only in view
+
+The library page mounts **no renderer at all**. Each card carries a ~340 byte
+polyline glyph generated from the setup's own shape descriptor — enough to tell
+one setup from another, and explicitly not a chart. Server-rendering the hero's
+23.4 kB SVG fallback per card would have put roughly 470 kB of markup into a
+twenty-setup document.
+
+Full fidelity is the detail page's replay: one renderer, mounted on
+intersection, suspended when the figure leaves the viewport or the tab is
+hidden. Both conditions are reconciled in one place so returning to a tab does
+not resume a renderer that is scrolled away.
+
+### Replay
+
+`lib/trading/replay.ts` is pure and deterministic, resolving nine stages from
+one normalized number through the same `normalizeProgress` the hero uses — so
+NaN, overshoot and reverse behave identically across the product.
+
+Playback subscribes to the shared frame loop **only while playing**, so a
+paused replay costs nothing. There is no second RAF loop, no scroll engine and
+no scroll listener: the replay is time- and scrub-driven, which is what lets it
+sit on a page that already has a scroll-driven hero. Unlike the system loop it
+clamps rather than wraps — a replay ends, and wrapping would imply the position
+was re-entered.
+
+Under reduced motion autoplay is disabled and the stage buttons and scrubber
+remain, so the reader still reaches every stage. Reduced motion removes the
+automation, not the content.
+
+### Search provider loading
+
+Providers now take a loader, not data (`lib/search/lazy.ts`). The index is
+fetched on first search, cached for the session, and a failed load clears the
+cache so a later keystroke retries. This is what makes a fourth and fifth
+content domain free: `ConceptProvider`, `SetupProvider` and everything after
+them scale without serializing any domain into any route.
+
 ## Motion
 
 One `requestAnimationFrame` loop for the whole application

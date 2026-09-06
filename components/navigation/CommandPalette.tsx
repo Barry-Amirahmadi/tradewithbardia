@@ -9,6 +9,8 @@ import type { Dictionary } from "@/lib/i18n/dictionary-type";
 import { useDismissableLayer } from "@/lib/interaction/use-dismissable-layer";
 import { prefersReducedMotion } from "@/lib/motion/frame-loop";
 import { createConceptProvider } from "@/lib/search/concept-provider";
+import { loadConceptIndex, loadSetupIndex } from "@/lib/search/indexes";
+import { createSetupProvider } from "@/lib/search/setup-provider";
 import {
   createCommandProvider,
   createNavigationProvider,
@@ -43,11 +45,9 @@ interface Props {
   onClose: () => void;
   locale: Locale;
   nav: Dictionary["nav"];
-  concepts: Dictionary["concepts"];
-  system: Dictionary["system"];
 }
 
-export default function CommandPalette({ open, onClose, locale, nav, concepts, system }: Props) {
+export default function CommandPalette({ open, onClose, locale, nav }: Props) {
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -98,10 +98,14 @@ export default function CommandPalette({ open, onClose, locale, nav, concepts, s
       registerSearchProvider(createCommandProvider()),
       // EPIC 04. A whole content domain became searchable by adding a file —
       // the registry doing exactly what it was built for.
-      registerSearchProvider(createConceptProvider(concepts, system)),
+      // Loaders, not data. Nothing is fetched until someone searches, and
+      // nothing is serialized into any route's payload — see lib/search/lazy.ts
+      // for the EPIC 04 defect this exists to prevent.
+      registerSearchProvider(createConceptProvider(() => loadConceptIndex(locale))),
+      registerSearchProvider(createSetupProvider(() => loadSetupIndex(locale))),
     ];
     return () => unregister.forEach((fn) => fn());
-  }, [nav, concepts, system]);
+  }, [nav, locale]);
 
   // Query → results. Async because a future provider will be. State is set
   // only inside the async callback, never synchronously in the effect body,

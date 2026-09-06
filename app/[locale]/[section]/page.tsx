@@ -29,9 +29,19 @@ import { findNavItem, primaryNav } from "@/lib/navigation";
  */
 export const dynamicParams = false;
 
+/**
+ * Segments that have their own route file. A static route wins over this
+ * dynamic one in Next's matcher, but generating the param here as well
+ * produces two builders for one URL — so the list is filtered rather than
+ * left to resolve by precedence.
+ */
+const dedicated = new Set(["setups", "systems"]);
+
 export function generateStaticParams() {
   return locales.flatMap((locale) =>
-    primaryNav.map((item) => ({ locale, section: item.segment })),
+    primaryNav
+      .filter((item) => !dedicated.has(item.segment))
+      .map((item) => ({ locale, section: item.segment })),
   );
 }
 
