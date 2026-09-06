@@ -72,7 +72,7 @@ export default function StaticTradingAnimation({
 
         {scene.candles.slice(0, revealed).map((candle, index) => {
           const bullish = candle.c >= candle.o;
-          const color = bullish ? "var(--market-long)" : "var(--market-short)";
+          const color = bullish ? "var(--market-bullish)" : "var(--market-bearish)";
           const cx = x(index);
           const top = y(Math.max(candle.o, candle.c));
           const bottom = y(Math.min(candle.o, candle.c));
@@ -139,7 +139,7 @@ function StaticAnnotation({
           cy={y(annotation.price) + (annotation.side === "high" ? -7 : 7)}
           r={2.5}
           opacity={opacity}
-          style={{ fill: "var(--text-secondary)" }}
+          style={{ fill: "var(--market-annotation)" }}
         />
       );
 
@@ -154,7 +154,7 @@ function StaticAnnotation({
           strokeDasharray="4 4"
           strokeWidth={1}
           vectorEffect="non-scaling-stroke"
-          style={{ stroke: "var(--accent)" }}
+          style={{ stroke: "var(--market-liquidity)" }}
         />
       );
 
@@ -168,7 +168,7 @@ function StaticAnnotation({
           fill="none"
           strokeWidth={1.5}
           vectorEffect="non-scaling-stroke"
-          style={{ stroke: "var(--accent)" }}
+          style={{ stroke: "var(--market-sweep)" }}
         />
       );
 
@@ -182,7 +182,7 @@ function StaticAnnotation({
           opacity={opacity * 0.8}
           strokeWidth={1}
           vectorEffect="non-scaling-stroke"
-          style={{ stroke: "var(--text-primary)" }}
+          style={{ stroke: "var(--market-structure)" }}
         />
       );
 
@@ -192,10 +192,10 @@ function StaticAnnotation({
       const height = Math.max(1, y(annotation.bottom) - top);
       const tone =
         annotation.tone === "long"
-          ? "var(--market-long)"
+          ? "var(--market-bullish)"
           : annotation.tone === "short"
-            ? "var(--market-short)"
-            : "var(--accent)";
+            ? "var(--market-imbalance)"
+            : "var(--market-annotation)";
       return (
         <rect
           x={left}
@@ -211,10 +211,10 @@ function StaticAnnotation({
     case "level": {
       const color =
         annotation.role === "stop"
-          ? "var(--market-short)"
+          ? "var(--market-stop)"
           : annotation.role === "target"
-            ? "var(--market-long)"
-            : "var(--text-primary)";
+            ? "var(--market-target)"
+            : "var(--market-entry)";
       return (
         <line
           x1={x(annotation.fromIndex)}

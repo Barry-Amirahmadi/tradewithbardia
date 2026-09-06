@@ -37,13 +37,13 @@ export default async function NotFoundContent() {
           lang={locale}
           dir={localeDirection[locale as Locale]}
         >
-          <p className="label-terminal numeric text-accent">
+          <p className="type-label numeric text-accent">
             {dictionary.notFound.code}
           </p>
-          <h1 className="mt-6 max-w-[18ch] text-[length:var(--text-h1)] font-medium">
+          <h1 className="mt-6 max-w-[18ch] type-h1">
             {dictionary.notFound.title}
           </h1>
-          <p className="mt-6 max-w-[var(--container-text)] text-[length:var(--text-lead)] text-secondary">
+          <p className="mt-6 max-w-[var(--container-text)] type-lead">
             {dictionary.notFound.body}
           </p>
           <div className="mt-[var(--space-12)]">

@@ -24,23 +24,43 @@ import type {
  */
 
 interface Palette {
-  long: string;
-  short: string;
+  bullish: string;
+  bearish: string;
   grid: string;
   axis: string;
-  accent: string;
-  text: string;
-  secondary: string;
+  neutral: string;
+  liquidity: string;
+  sweep: string;
+  structure: string;
+  imbalance: string;
+  annotation: string;
+  entry: string;
+  stop: string;
+  target: string;
 }
 
+/**
+ * Every colour the chart draws comes from the trading vocabulary in
+ * globals.css (§20, §21). None of these map to a generic UI token any more:
+ * the renderer used to draw liquidity and the sweep with `--accent`, the
+ * structure break with `--text-primary` and the imbalance with the bearish
+ * candle colour, which meant the chart's meaning lived in renderer code rather
+ * than in the design system. A second chart would have re-invented it.
+ */
 const TOKENS = {
-  long: "--market-long",
-  short: "--market-short",
+  bullish: "--market-bullish",
+  bearish: "--market-bearish",
   grid: "--market-grid",
   axis: "--market-axis",
-  accent: "--accent",
-  text: "--text-primary",
-  secondary: "--text-secondary",
+  neutral: "--market-neutral",
+  liquidity: "--market-liquidity",
+  sweep: "--market-sweep",
+  structure: "--market-structure",
+  imbalance: "--market-imbalance",
+  annotation: "--market-annotation",
+  entry: "--market-entry",
+  stop: "--market-stop",
+  target: "--market-target",
 } as const satisfies Record<keyof Palette, string>;
 
 /**
@@ -63,18 +83,59 @@ function readPalette(host: HTMLElement): Palette {
     return getComputedStyle(probe).color;
   };
 
-  const palette = {
-    long: read(TOKENS.long),
-    short: read(TOKENS.short),
-    grid: read(TOKENS.grid),
-    axis: read(TOKENS.axis),
-    accent: read(TOKENS.accent),
-    text: read(TOKENS.text),
-    secondary: read(TOKENS.secondary),
-  };
+  // Filled by iterating TOKENS rather than by restating every role, so the
+  // token list stays the single source of truth. Completeness is guaranteed at
+  // compile time by `satisfies Record<keyof Palette, string>` on TOKENS: adding
+  // a Palette role without its token is a type error, not a runtime hole.
+  const palette = {} as Palette;
+  for (const role of Object.keys(TOKENS) as (keyof Palette)[]) {
+    palette[role] = read(TOKENS[role]);
+  }
 
   probe.remove();
   return palette;
+}
+
+/**
+ * Chart type, read from the same tokens as the rest of the product (§20).
+ * The renderer previously hardcoded `9px ui-monospace` and `10px ui-monospace`,
+ * which meant the chart quietly opted out of the typography system — change
+ * the mono face and every label except the chart's would follow.
+ *
+ * Unlike the colours, these are plain values with no `light-dark()`, so they
+ * resolve straight off `getComputedStyle` without the probe.
+ */
+interface ChartType {
+  family: string;
+  axisSize: number;
+  tagSize: number;
+}
+
+function readChartType(host: HTMLElement, compact: boolean): ChartType {
+  const styles = getComputedStyle(host);
+  const px = (token: string, fallback: number): number => {
+    const parsed = Number.parseFloat(styles.getPropertyValue(token));
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+  };
+
+  // The mono stack has to land on a real property to resolve its var() chain.
+  const probe = document.createElement("span");
+  probe.style.position = "absolute";
+  probe.style.opacity = "0";
+  probe.style.fontFamily = "var(--font-mono)";
+  host.appendChild(probe);
+  const family = getComputedStyle(probe).fontFamily || "ui-monospace, monospace";
+  probe.remove();
+
+  return {
+    family,
+    axisSize: compact
+      ? px("--chart-axis-size-compact", 9)
+      : px("--chart-axis-size", 10),
+    tagSize: compact
+      ? px("--chart-tag-size-compact", 8)
+      : px("--chart-tag-size", 9),
+  };
 }
 
 /** rgb(r g b) → rgb(r g b / alpha), without a colour library. */
@@ -98,6 +159,7 @@ export default function CanvasTradingAnimation({
 
   const progressRef = useRef(progress);
   const paletteRef = useRef<Palette | null>(null);
+  const typeRef = useRef<ChartType | null>(null);
   const dirtyRef = useRef(true);
 
   /**
@@ -157,6 +219,7 @@ export default function CanvasTradingAnimation({
     if (context === null) return;
 
     paletteRef.current = readPalette(host);
+    typeRef.current = readChartType(host, host.getBoundingClientRect().width < 640);
 
     let resizeAttempts = 0;
 
@@ -187,6 +250,10 @@ export default function CanvasTradingAnimation({
       canvas.style.width = `${rect.width}px`;
       canvas.style.height = `${rect.height}px`;
       sizeRef.current = { width: rect.width, height: rect.height, dpr };
+      // Chart type is density-dependent, so it is re-read whenever the box
+      // changes rather than only on mount — otherwise crossing the compact
+      // boundary leaves the axis set at the wrong size until a theme change.
+      typeRef.current = readChartType(host, rect.width < 640);
       dirtyRef.current = true;
     };
 
@@ -199,6 +266,7 @@ export default function CanvasTradingAnimation({
     // preference flips underneath a user who never touched the toggle.
     const refreshPalette = () => {
       paletteRef.current = readPalette(host);
+      typeRef.current = readChartType(host, host.getBoundingClientRect().width < 640);
       dirtyRef.current = true;
     };
     const themeObserver = new MutationObserver(refreshPalette);
@@ -211,8 +279,9 @@ export default function CanvasTradingAnimation({
 
     const draw = (ctx: CanvasRenderingContext2D) => {
       const palette = paletteRef.current;
+      const chartType = typeRef.current;
       const { width, height, dpr } = sizeRef.current;
-      if (palette === null || width === 0 || height === 0) return;
+      if (palette === null || chartType === null || width === 0 || height === 0) return;
 
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, width, height);
@@ -253,7 +322,7 @@ export default function CanvasTradingAnimation({
         ((eased.max - price) / Math.max(eased.max - eased.min, 1e-6)) *
           plotHeight;
 
-      drawGrid(ctx, palette, eased, padding.left, plotWidth, width - axisWidth + 10, compact, y);
+      drawGrid(ctx, palette, chartType, eased, padding.left, plotWidth, width - axisWidth + 10, y);
 
       // In the closing stage the candles recede and the annotations stay lit:
       // the noise fades and what is left is the structure. §20's final beat,
@@ -266,7 +335,7 @@ export default function CanvasTradingAnimation({
       for (const annotation of scene.annotations) {
         const alpha = state.opacity.get(annotation.id) ?? 0;
         if (alpha <= 0.01) continue;
-        drawAnnotation(ctx, palette, annotation, alpha, x, y, step, compact, plotWidth, padding.left);
+        drawAnnotation(ctx, palette, chartType, annotation, alpha, x, y, step, compact, plotWidth, padding.left);
       }
     };
 
@@ -328,20 +397,20 @@ export default function CanvasTradingAnimation({
 function drawGrid(
   ctx: CanvasRenderingContext2D,
   palette: Palette,
+  chartType: ChartType,
   bounds: { min: number; max: number },
   plotLeft: number,
   plotWidth: number,
   axisX: number,
-  compact: boolean,
   y: (price: number) => number,
 ): void {
-  const lines = compact ? 4 : 6;
+  const lines = chartType.axisSize <= 9 ? 4 : 6;
   ctx.lineWidth = 1;
-  ctx.font = `${compact ? 9 : 10}px ui-monospace, monospace`;
+  ctx.font = `${chartType.axisSize}px ${chartType.family}`;
   ctx.textBaseline = "middle";
   ctx.textAlign = "left";
   ctx.strokeStyle = withAlpha(palette.grid, 0.75);
-  ctx.fillStyle = withAlpha(palette.secondary, 0.85);
+  ctx.fillStyle = withAlpha(palette.axis, 0.85);
 
   for (let i = 0; i <= lines; i += 1) {
     const price = bounds.min + ((bounds.max - bounds.min) * i) / lines;
@@ -378,7 +447,7 @@ function drawCandles(
     if (alpha <= 0.01) continue;
 
     const bullish = candle.c >= candle.o;
-    const color = bullish ? palette.long : palette.short;
+    const color = bullish ? palette.bullish : palette.bearish;
     const cx = x(i);
 
     ctx.strokeStyle = withAlpha(color, alpha * 0.9);
@@ -398,6 +467,7 @@ function drawCandles(
 function drawAnnotation(
   ctx: CanvasRenderingContext2D,
   palette: Palette,
+  chartType: ChartType,
   annotation: Annotation,
   alpha: number,
   x: (index: number) => number,
@@ -407,7 +477,7 @@ function drawAnnotation(
   plotWidth: number,
   plotLeft: number,
 ): void {
-  const tagFont = `${compact ? 8 : 9}px ui-monospace, monospace`;
+  const tagFont = `${chartType.tagSize}px ${chartType.family}`;
 
   const tag = (text: string, px: number, py: number, color: string, align: CanvasTextAlign = "left") => {
     ctx.font = tagFont;
@@ -422,7 +492,7 @@ function drawAnnotation(
       const px = x(annotation.index);
       const py = y(annotation.price);
       const offset = annotation.side === "high" ? -7 : 7;
-      ctx.fillStyle = withAlpha(palette.secondary, alpha);
+      ctx.fillStyle = withAlpha(palette.annotation, alpha);
       ctx.beginPath();
       ctx.arc(px, py + offset, 2.2, 0, Math.PI * 2);
       ctx.fill();
@@ -433,38 +503,38 @@ function drawAnnotation(
       const py = Math.round(y(annotation.price)) + 0.5;
       ctx.save();
       ctx.setLineDash([4, 4]);
-      ctx.strokeStyle = withAlpha(palette.accent, alpha * 0.85);
+      ctx.strokeStyle = withAlpha(palette.liquidity, alpha * 0.85);
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.moveTo(x(annotation.fromIndex), py);
       ctx.lineTo(plotLeft + plotWidth, py);
       ctx.stroke();
       ctx.restore();
-      tag("LIQ", x(annotation.fromIndex) + 4, py - 8, palette.accent);
+      tag("LIQ", x(annotation.fromIndex) + 4, py - 8, palette.liquidity);
       break;
     }
 
     case "sweep": {
       const px = x(annotation.index);
       const py = y(annotation.price);
-      ctx.strokeStyle = withAlpha(palette.accent, alpha);
+      ctx.strokeStyle = withAlpha(palette.sweep, alpha);
       ctx.lineWidth = 1.5;
       ctx.beginPath();
       ctx.arc(px, py, compact ? 5 : 7, 0, Math.PI * 2);
       ctx.stroke();
-      tag("SWEEP", px + (compact ? 8 : 11), py, palette.accent);
+      tag("SWEEP", px + (compact ? 8 : 11), py, palette.sweep);
       break;
     }
 
     case "structure": {
       const py = Math.round(y(annotation.price)) + 0.5;
-      ctx.strokeStyle = withAlpha(palette.text, alpha * 0.8);
+      ctx.strokeStyle = withAlpha(palette.structure, alpha * 0.8);
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.moveTo(x(annotation.fromIndex), py);
       ctx.lineTo(x(annotation.toIndex), py);
       ctx.stroke();
-      tag("MSS", x(annotation.toIndex) + 4, py, palette.text);
+      tag("MSS", x(annotation.toIndex) + 4, py, palette.structure);
       break;
     }
 
@@ -473,7 +543,12 @@ function drawAnnotation(
       const right = plotLeft + plotWidth;
       const top = y(annotation.top);
       const bottom = y(annotation.bottom);
-      const tone = annotation.tone === "long" ? palette.long : annotation.tone === "short" ? palette.short : palette.accent;
+      const tone =
+        annotation.tone === "long"
+          ? palette.bullish
+          : annotation.tone === "short"
+            ? palette.imbalance
+            : palette.annotation;
 
       ctx.fillStyle = withAlpha(tone, alpha * 0.16);
       ctx.fillRect(left, top, right - left, Math.max(1, bottom - top));
@@ -488,10 +563,10 @@ function drawAnnotation(
       const py = Math.round(y(annotation.price)) + 0.5;
       const color =
         annotation.role === "stop"
-          ? palette.short
+          ? palette.stop
           : annotation.role === "target"
-            ? palette.long
-            : palette.text;
+            ? palette.target
+            : palette.entry;
 
       ctx.save();
       if (annotation.role !== "entry") ctx.setLineDash([2, 3]);

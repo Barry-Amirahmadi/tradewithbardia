@@ -164,6 +164,29 @@ time.
 
 §13, §77.12.
 
+## 8a. Navigation is data, not markup
+
+The navigation tree lives in `lib/navigation.ts`. A label written as a string
+in a component, or a route string assembled anywhere except `hrefFor`, is a
+bug — the first cannot be translated and the second is how a nav and a router
+drift apart.
+
+`hrefFor` returns `null` for anything not navigable, so a planned destination
+cannot be rendered as a link. The nav shows the information architecture
+honestly; it never links to a route that does not exist.
+
+Search is a provider registry. Adding a searchable domain means registering a
+provider, never editing the palette. No provider may index content that does
+not exist. A provider is isolated twice over — `allSettled` for one that
+throws, a deadline for one that hangs — because a palette stuck on "Searching"
+is a broken palette.
+
+**Hover is a mouse capability, not a default.** Any handler that opens
+something on `pointerenter` checks `pointerType`, and every such surface has a
+press-based path that works without hovering at all. `pointerenter` and
+`focusin` both fire before the `click` they precede, so opening on either one
+turns a tap into open-then-close.
+
 ## 9. Definition of done
 
 A feature is not finished because it renders. It is finished when:

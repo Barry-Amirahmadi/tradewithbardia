@@ -197,12 +197,12 @@ export default function HeroScene({
               outro on a phone and only its button survives. */}
           <div className="relative min-h-[17rem] lg:min-h-[19rem]">
             <div ref={introRef} className="will-change-[opacity,transform]">
-              <p className="label-terminal">{hero.eyebrow}</p>
-              <h1 className="mt-4 text-[length:var(--text-h1)] font-medium">
+              <p className="type-label">{hero.eyebrow}</p>
+              <h1 className="mt-4 type-h1">
                 {hero.titleLine1}
                 <span className="block text-secondary">{hero.titleLine2}</span>
               </h1>
-              <p className="mt-6 max-w-[38ch] text-[length:var(--text-lead)] text-secondary">
+              <p className="mt-6 max-w-[38ch] type-lead">
                 {hero.lead}
               </p>
               <div className="mt-8 flex flex-wrap items-center gap-3">
@@ -225,8 +225,8 @@ export default function HeroScene({
               aria-live="polite"
             >
               <div key={stageId} className="animate-[menu-reveal_var(--dur-slow)_var(--ease-precision)]">
-                <p className="label-terminal text-accent">{stage.label}</p>
-                <p className="mt-4 max-w-[22ch] text-[length:var(--text-h2)] font-medium">
+                <p className="type-label text-accent">{stage.label}</p>
+                <p className="mt-4 max-w-[22ch] type-h2">
                   {stage.caption}
                 </p>
               </div>
@@ -237,8 +237,8 @@ export default function HeroScene({
               className="absolute inset-0 flex flex-col justify-center"
               style={{ opacity: 0, visibility: "hidden" }}
             >
-              <p className="label-terminal">{hero.stages.system.label}</p>
-              <p className="mt-4 max-w-[26ch] text-[length:var(--text-h2)] font-medium">
+              <p className="type-label">{hero.stages.system.label}</p>
+              <p className="mt-4 max-w-[26ch] type-h2">
                 {hero.stages.system.caption}
               </p>
               <div className="mt-8">

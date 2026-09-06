@@ -28,11 +28,11 @@ export default function Process({
   return (
     <section className="border-t border-subtle bg-surface py-[var(--space-32)]">
       <div className="container-page">
-        <p className="label-terminal">{process.eyebrow}</p>
-        <h2 className="mt-4 max-w-[20ch] text-[length:var(--text-h2)] font-medium">
+        <p className="type-label">{process.eyebrow}</p>
+        <h2 className="mt-4 max-w-[20ch] type-h2">
           {process.title}
         </h2>
-        <p className="mt-6 max-w-[var(--container-text)] text-[length:var(--text-lead)] text-secondary">
+        <p className="mt-6 max-w-[var(--container-text)] type-lead">
           {process.lead}
         </p>
 
@@ -44,13 +44,13 @@ export default function Process({
                 key={key}
                 className="flex flex-col gap-3 bg-surface p-[var(--space-6)]"
               >
-                <span className="label-terminal numeric text-accent">
+                <span className="type-label numeric text-accent">
                   {String(index + 1).padStart(2, "0")}
                 </span>
-                <h3 className="text-[length:var(--text-h3)] font-medium">
+                <h3 className="type-h3">
                   {step.label}
                 </h3>
-                <p className="text-[length:var(--text-caption)] text-secondary">
+                <p className="type-caption">
                   {step.body}
                 </p>
               </li>
@@ -61,7 +61,7 @@ export default function Process({
               a cell rather than an arrow so it survives both directions and
               every breakpoint without a mirrored asset. */}
           <li className="flex items-center justify-center bg-surface p-[var(--space-6)]">
-            <span className="label-terminal text-accent">
+            <span className="type-label text-accent">
               ↻ {process.steps.context.label}
             </span>
           </li>

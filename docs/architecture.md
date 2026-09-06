@@ -175,6 +175,24 @@ add a dictionary file, and add one line to the `[data-locale-only]` rule in
 translation file that drifts out of shape is a type error rather than an
 `undefined` rendered into the page.
 
+## Global navigation and interaction
+
+The navigation tree, its state machine, the command palette and the search
+provider abstraction are documented in **`docs/navigation.md`**. The points
+that matter at the architecture level:
+
+- One navigation model (`lib/navigation.ts`) drives the bar, mega menus, mobile
+  drawer, footer, palette and route validation. `hrefFor` is the only place a
+  URL is assembled and returns `null` for non-navigable destinations.
+- Scroll-derived navigation state is written to a `data-state` attribute from
+  the single shared frame loop. It causes zero React renders.
+- Open surfaces store the route they were opened on, so closing on navigation
+  is derived rather than an effect calling `setState` per route change.
+- Search is a provider registry. No backend search exists; the one shipped
+  provider indexes the navigation tree and the palette's commands.
+- Both overlays share one dismissable-layer hook for focus, Escape and scroll
+  locking.
+
 ## Server/client split
 
 The hero is the pattern to copy. `Hero.tsx` is a server component whose only

@@ -23,6 +23,8 @@
   --ink-150: #191919;
   --ink-200: #232323;
   --ink-300: #2e2e2e;
+  --ink-400: #5a5a5a;
+  --ink-450: #7a7a7a;
   --ink-500: #8a8a8a;
   --ink-900: #f5f5f5;
 
@@ -32,6 +34,8 @@
   --paper-100: #eef0f4;
   --paper-200: #e2e5ec;
   --paper-300: #d4d8e1;
+  --paper-400: #a9aeb8;
+  --paper-450: #676d79;
   --paper-500: #626873;
   --paper-900: #080808;
 
@@ -41,10 +45,21 @@
   --blue-600: #0060df;
   --blue-700: #004ec2;
 
-  /* Market semantics. Deliberately desaturated — this is a research terminal,
-     not a casino (§5, §67). */
-  --long-500: #21a179;
-  --short-500: #c2493d;
+  /* Three supporting hues, deliberately desaturated — this is a research
+     terminal, not a casino (§5, §67). Each carries a `-500` tuned to read on
+     a light background and a `-400` tuned to read on a dark one, because a
+     single value cannot clear 4.5:1 against both.
+     The market marks and the UI status colours draw from these same families
+     on purpose: a rising candle and a success message should look related. */
+  --green-400: #34c79a;
+  --green-500: #21a179;
+  --green-600: #0f7a56;
+  --red-400: #e8776a;
+  --red-500: #c2493d;
+  --red-600: #b3392d;
+  --amber-400: #e0a94a;
+  --amber-500: #b5822a;
+  --amber-600: #8a5d0a;
 
   /* --- 2. SEMANTIC ------------------------------------------------------ */
   /* light-dark() resolves against `color-scheme` below, so every token is
@@ -57,12 +72,57 @@
   --surface-raised: light-dark(var(--paper-100), var(--ink-100));
   --surface-overlay: light-dark(var(--paper-050), var(--ink-150));
 
+  /* Glass. Used sparingly and only where content must stay legible through a
+     moving surface — the scrolled navbar, an overlay. The product must still
+     read as premium with backdrop-filter disabled, so every glass surface has
+     a solid colour underneath rather than relying on the blur (§13). */
+  --surface-glass: light-dark(
+    color-mix(in srgb, var(--paper-050) 78%, transparent),
+    color-mix(in srgb, var(--ink-100) 74%, transparent)
+  );
+
   --text-primary: light-dark(var(--paper-900), var(--ink-900));
   --text-secondary: light-dark(var(--paper-500), var(--ink-500));
+  /* Third tier, for de-emphasised metadata. Still clears 4.5:1 — a token that
+     cannot be used accessibly should not exist (§8). Near-white and near-black
+     grounds leave little room between "secondary" and "muted" while holding
+     that floor, so the gap is deliberately small; pair it with size or weight
+     rather than pushing the colour further. */
+  --text-muted: light-dark(var(--paper-450), var(--ink-450));
   --text-inverse: light-dark(var(--ink-900), var(--paper-900));
+  /* Disabled text sits below 4.5:1 on purpose. WCAG 1.4.3 exempts inactive
+     controls, and a disabled control that still looks active is the worse
+     failure. Disabled state is always signalled by `disabled`/`aria-disabled`
+     and the not-allowed cursor as well, never by colour alone. */
+  --text-disabled: light-dark(var(--paper-400), var(--ink-400));
 
   --border-subtle: light-dark(var(--paper-200), var(--ink-200));
   --border-strong: light-dark(var(--paper-300), var(--ink-300));
+
+  /* --- Status. Four roles, no more. `info` deliberately reuses the accent
+     rather than introducing a fifth hue (§5: stay restrained). ------------ */
+  --status-success: light-dark(var(--green-600), var(--green-400));
+  --status-warning: light-dark(var(--amber-600), var(--amber-400));
+  --status-danger: light-dark(var(--red-600), var(--red-400));
+  --status-info: var(--accent);
+
+  /* Tinted backings for status surfaces, derived so they track their hue. */
+  --status-success-surface: color-mix(in srgb, var(--status-success) 12%, transparent);
+  --status-warning-surface: color-mix(in srgb, var(--status-warning) 12%, transparent);
+  --status-danger-surface: color-mix(in srgb, var(--status-danger) 12%, transparent);
+  --status-info-surface: color-mix(in srgb, var(--status-info) 12%, transparent);
+
+  /* Focus is its own role, not "the accent". Keeping it separate means the
+     brand accent can change without silently altering the focus indicator —
+     the one affordance that must never degrade (§8). */
+  --focus-ring: var(--accent);
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 3px;
+
+  /* Disabled is a surface + text pair, so every control disables the same way. */
+  --disabled-surface: light-dark(var(--paper-100), var(--ink-100));
+  --disabled-text: var(--text-disabled);
+  --disabled-opacity: 0.55;
 
   --accent: light-dark(var(--blue-600), var(--blue-500));
   /* Hover moves AWAY from the page's own lightness in both themes: darker on
@@ -78,10 +138,56 @@
      it to 5.76:1 and reads as intentional rather than washed out. */
   --accent-contrast: light-dark(var(--paper-050), var(--ink-000));
 
-  --market-long: var(--long-500);
-  --market-short: var(--short-500);
+  /* --- TRADING VISUALIZATION LANGUAGE — §20, §21 ------------------------
+     Every chart concept gets a named token. Before this existed, the canvas
+     drew liquidity AND the sweep with `--accent`, the structure break with
+     `--text-primary`, and the fair value gap with the bearish candle colour —
+     three different ideas borrowing three unrelated generic tokens. Any second
+     chart would have invented its own mapping and the products would have
+     drifted apart.
+
+     These are chart MARKS, not text: the threshold is 3:1 (WCAG 1.4.11
+     non-text contrast), not 4.5:1. Labels drawn beside them use the text
+     tokens above and are held to 4.5:1. */
+
+  /* Price direction. */
+  --market-bullish: light-dark(var(--green-500), var(--green-500));
+  --market-bearish: light-dark(var(--red-500), var(--red-500));
+
+  /* Chart furniture. */
   --market-grid: light-dark(var(--paper-200), var(--ink-150));
   --market-axis: light-dark(var(--paper-500), var(--ink-500));
+  --market-neutral: light-dark(var(--paper-500), var(--ink-500));
+
+  /* Concepts. Liquidity and the sweep that takes it share the accent because
+     they are the same idea at two moments — but they are separate tokens, so
+     they can diverge without hunting through renderer code. */
+  --market-liquidity: var(--accent);
+  --market-sweep: var(--accent);
+  --market-structure: light-dark(var(--paper-900), var(--ink-900));
+  --market-imbalance: light-dark(var(--red-500), var(--red-500));
+  --market-annotation: light-dark(var(--paper-500), var(--ink-500));
+
+  /* Execution levels. Entry is neutral on purpose: it is a decision, not an
+     outcome, and colouring it green would imply a result the chart is not
+     claiming (§26, §77.13). */
+  --market-entry: light-dark(var(--paper-900), var(--ink-900));
+  --market-stop: light-dark(var(--red-500), var(--red-400));
+  --market-target: light-dark(var(--green-600), var(--green-500));
+
+  /* Kept as aliases so existing renderer code and any future equity/drawdown
+     series read from one vocabulary. */
+  --market-long: var(--market-bullish);
+  --market-short: var(--market-bearish);
+
+  /* Chart typography. Deliberately a step below the UI scale: axis figures and
+     annotation tags are reference marks, and at UI sizes they compete with the
+     price action they are labelling. Declared here rather than hardcoded in
+     the renderer so every future chart is set the same way (§20). */
+  --chart-axis-size: 10px;
+  --chart-tag-size: 9px;
+  --chart-axis-size-compact: 9px;
+  --chart-tag-size-compact: 8px;
 
   /* Scrim behind the scrolled navbar (§15). color-mix keeps this derived from
      the primitives instead of restating their values with an alpha channel —
@@ -91,16 +197,28 @@
     color-mix(in srgb, var(--ink-000) 64%, transparent)
   );
 
+  /* One blur recipe for every glass surface. Previously this pair of magic
+     numbers was repeated at each call site, which is how two glass surfaces
+     drift a pixel apart and stop looking like the same material.
+     `--scrim` tints the PAGE colour and backs page-level chrome; the
+     `--surface-glass` above tints the SURFACE colour and backs components. */
+  --glass-blur: blur(14px) saturate(1.4);
+
   /* --- Typography scale — §8 -------------------------------------------- */
-  /* Fluid, clamp-based. No breakpoint-specific font-size overrides anywhere. */
-  --text-micro: 0.6875rem;
-  --text-caption: 0.8125rem;
-  --text-body: clamp(0.9375rem, 0.9rem + 0.2vw, 1.0625rem);
-  --text-lead: clamp(1.0625rem, 1rem + 0.4vw, 1.25rem);
-  --text-h3: clamp(1.25rem, 1.1rem + 0.8vw, 1.75rem);
-  --text-h2: clamp(1.75rem, 1.4rem + 1.6vw, 2.75rem);
-  --text-h1: clamp(2.25rem, 1.6rem + 3.2vw, 4.5rem);
-  --text-display: clamp(2.75rem, 1.6rem + 5.6vw, 7rem);
+  /* Fluid, clamp-based, one step per role. Latin and Persian share this
+     scale; see the Persian note below for why there is no second one. */
+  --size-micro: 0.6875rem;
+  --size-caption: 0.8125rem;
+  --size-body: clamp(0.9375rem, 0.9rem + 0.2vw, 1.0625rem);
+  --size-lead: clamp(1.0625rem, 1rem + 0.4vw, 1.25rem);
+  --size-h3: clamp(1.25rem, 1.1rem + 0.8vw, 1.75rem);
+  --size-h2: clamp(1.75rem, 1.4rem + 1.6vw, 2.75rem);
+  --size-h1: clamp(2.25rem, 1.6rem + 3.2vw, 4.5rem);
+  --size-display: clamp(2.75rem, 1.6rem + 5.6vw, 7rem);
+
+  /* Persian optical size correction. One number, used by the [lang="fa"]
+     role overrides below the bridge. */
+  --fa-scale: 1.04;
 
   --tracking-display: -0.03em;
   --tracking-tight: -0.015em;
@@ -112,6 +230,18 @@
   --leading-snug: 1.25;
   --leading-normal: 1.6;
   --leading-relaxed: 1.75;
+
+  /* Four weights, not nine. An institutional register does not need a light
+     weight, and Vazirmatn's heavier cuts get muddy at body sizes. */
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  /* Persian runs optically smaller than Latin at the same px, and Vazirmatn's
+     descenders need more room. One multiplier applied at the [lang] boundary
+     rather than a parallel Persian type scale (§9: not an afterthought, and
+     not a duplicate system either). */
 
   /* --- Space, radius, elevation — §9 ------------------------------------ */
   --space-1: 0.25rem;
@@ -144,12 +274,67 @@
   --dur-slow: 720ms;
   --dur-scene: 1200ms;
 
+  /* --- Semantic motion categories — §22 ---------------------------------
+     The durations above are raw values; these name the JOB. Components pick a
+     category, not a millisecond count, so the whole product can be slowed or
+     tightened from one place. Pairing each with its easing is deliberate:
+     duration and curve are one decision, not two. */
+  --motion-instant: var(--dur-instant) var(--ease-out);      /* state flips */
+  --motion-micro: var(--dur-fast) var(--ease-out);           /* hover, focus */
+  --motion-interaction: var(--dur-base) var(--ease-precision); /* menus, panels */
+  --motion-transition: var(--dur-slow) var(--ease-precision);  /* route, section */
+  --motion-cinematic: var(--dur-scene) var(--ease-precision);  /* hero beats */
+
+  /* Travel and depth ranges, so motion stays restrained. Anything larger than
+     `--move-lg` reads as bouncy rather than precise (§54). */
+  --move-xs: 4px;
+  --move-sm: 8px;
+  --move-md: 14px;
+  --move-lg: 28px;
+
+  --fade-from: 0;
+  --fade-to: 1;
+  /* Scale never travels far — institutional, not playful. */
+  --scale-from: 0.98;
+  --scale-to: 1;
+
   /* --- Layout ------------------------------------------------------------ */
-  --container-max: 88rem;
-  --container-text: 46rem;
+  /* --- Layout — §12 -------------------------------------------------------
+     Four widths covering both registers the product has to serve: cinematic
+     marketing and dense financial application. They share one scale so a
+     dashboard laid out beside a marketing section still feels like one
+     product. */
+  --container-max: 88rem;   /* full marketing width */
+  --container-wide: 72rem;  /* visualisations, tables, dashboards */
+  --container-text: 46rem;  /* reading measure — prose, lessons */
+  --container-narrow: 34rem; /* forms, dialogs, focused input */
   --gutter: clamp(1.25rem, 4vw, 4rem);
   --nav-h-initial: 5.5rem;
   --nav-h-scrolled: 3.75rem;
+
+  /* --- Density — §27 ------------------------------------------------------
+     Breakpoints are named for available space, not for devices. A component
+     asks "how much room do I have", never "am I on a phone". */
+  --bp-compact: 40rem;   /* 640px — below this, one column and larger targets */
+  --bp-standard: 64rem;  /* 1024px — the marketing grid opens up */
+  --bp-wide: 90rem;      /* 1440px — dashboards can go multi-pane */
+
+  /* Row heights for dense financial surfaces. Marketing does not use these. */
+  --row-compact: 2rem;
+  --row-standard: 2.5rem;
+  --row-comfortable: 3rem;
+
+  /* --- Icons — §24 --------------------------------------------------------
+     Icons are geometric, single-stroke, and sized from this scale only. Stroke
+     width stays constant across sizes so they read as one family. */
+  --icon-sm: 1rem;
+  --icon-md: 1.25rem;
+  --icon-lg: 1.5rem;
+  --icon-stroke: 1.5;
+
+  /* Minimum interactive target. 44px is the AAA figure and the right default
+     for a product people use on a phone while a position is open (§28). */
+  --target-min: 2.75rem;
 
   /* --- Z-index — one ladder, no ad-hoc values -------------------------- */
   --z-base: 0;
@@ -171,6 +356,24 @@
   color-scheme: light;
 }
 
+/* Persian typography — §9.
+   Persian is not a translation layer: it gets its own face, looser leading,
+   labels that drop the uppercase and wide tracking that damage joined script,
+   LTR numerals, and a 4% optical size bump. Vazirmatn's x-height runs smaller
+   than Inter's at the same computed size, so matching the Latin scale exactly
+   would set Persian a step small.
+
+   The ratio lives in `--fa-scale` alone; the roles below multiply the shared
+   scale rather than restating it, so there is one type system, not two. */
+
+[lang="fa"] .type-display { font-size: calc(var(--size-display) * var(--fa-scale)); }
+[lang="fa"] .type-h1 { font-size: calc(var(--size-h1) * var(--fa-scale)); }
+[lang="fa"] .type-h2 { font-size: calc(var(--size-h2) * var(--fa-scale)); }
+[lang="fa"] .type-h3 { font-size: calc(var(--size-h3) * var(--fa-scale)); }
+[lang="fa"] .type-lead { font-size: calc(var(--size-lead) * var(--fa-scale)); }
+[lang="fa"] .type-body { font-size: calc(var(--size-body) * var(--fa-scale)); }
+[lang="fa"] .type-caption { font-size: calc(var(--size-caption) * var(--fa-scale)); }
+
 /* --- 3. TAILWIND BRIDGE -------------------------------------------------- */
 /* `inline` makes utilities compile to var(--token) so they stay live at
    runtime instead of being frozen at build time. */
@@ -188,6 +391,24 @@
   --color-accent: var(--accent);
   --color-accent-hover: var(--accent-hover);
   --color-accent-contrast: var(--accent-contrast);
+  --color-muted: var(--text-muted);
+  --color-disabled: var(--text-disabled);
+
+  --color-success: var(--status-success);
+  --color-warning: var(--status-warning);
+  --color-danger: var(--status-danger);
+  --color-info: var(--status-info);
+
+  /* Chart marks are exposed so a future React chart layer can use utilities
+     without reaching for raw values. */
+  --color-bullish: var(--market-bullish);
+  --color-bearish: var(--market-bearish);
+  --color-liquidity: var(--market-liquidity);
+  --color-structure: var(--market-structure);
+  --color-imbalance: var(--market-imbalance);
+  --color-entry: var(--market-entry);
+  --color-stop: var(--market-stop);
+  --color-target: var(--market-target);
   --color-long: var(--market-long);
   --color-short: var(--market-short);
 
@@ -227,8 +448,8 @@
   body {
     background-color: var(--canvas);
     color: var(--text-primary);
-    font-family: var(--font-body);
-    font-size: var(--text-body);
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: var(--size-body);
     line-height: var(--leading-normal);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
@@ -240,17 +461,14 @@
      Matched on any [lang] ancestor, not on :root: the document shell sits
      above the locale segment, so `lang` lives on the locale wrapper. */
   [lang="fa"] {
-    font-family: var(--font-persian);
+    font-family: var(--font-vazirmatn), var(--font-inter), system-ui, sans-serif;
     line-height: var(--leading-relaxed);
+    font-size: var(--size-body);
   }
 
-  /* Financial data is always monospaced and tabular so digits do not jitter
-     as values update (§8). */
-  .numeric {
-    font-family: var(--font-mono);
-    font-variant-numeric: tabular-nums;
-    font-feature-settings: "tnum" 1;
-  }
+  /* `.numeric` and `.type-data` are defined together in the typography roles
+     section below — financial figures are a typographic role, not a one-off
+     utility. */
 
   /* Latin runs inside Persian copy keep LTR order without breaking the
      paragraph's RTL flow — same UAX #9 P2/P3 problem solved in the vault's
@@ -258,12 +476,12 @@
   [lang="fa"] .latin {
     unicode-bidi: isolate;
     direction: ltr;
-    font-family: var(--font-mono);
+    font-family: var(--font-jetbrains), ui-monospace, "SFMono-Regular", monospace;
   }
 
   :focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 3px;
+    outline: var(--focus-ring-width) solid var(--focus-ring);
+    outline-offset: var(--focus-ring-offset);
     border-radius: var(--radius-sm);
   }
 
@@ -291,6 +509,123 @@
   }
 }
 
+/* --- TYPOGRAPHY ROLES — §9, §10 ------------------------------------------
+   Seven roles. A component picks the ROLE it is playing; it never restates a
+   size, a tracking and a leading in markup. Before these existed, headings
+   carried `text-[length:var(--size-h1)]` plus a weight plus a max-width — the
+   type scale was in the components rather than in the system, and the next
+   page would have re-derived it slightly differently.
+
+   Each role binds size + weight + leading + tracking together, because those
+   four are one typographic decision, not four independent ones. */
+
+@layer components {
+  /* No font-family here on purpose. Headings inherit from the document — or
+     from the [lang] wrapper — so Persian headings stay on Vazirmatn without a
+     single per-role override. Declaring the Latin face here is exactly what
+     broke them. */
+  .type-display,
+  .type-h1,
+  .type-h2,
+  .type-h3 {
+    text-wrap: balance;
+  }
+
+  .type-display {
+    font-size: var(--size-display);
+    font-weight: var(--weight-medium);
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-display);
+  }
+
+  .type-h1 {
+    font-size: var(--size-h1);
+    font-weight: var(--weight-medium);
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-tight);
+  }
+
+  .type-h2 {
+    font-size: var(--size-h2);
+    font-weight: var(--weight-medium);
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-tight);
+  }
+
+  .type-h3 {
+    font-size: var(--size-h3);
+    font-weight: var(--weight-medium);
+    line-height: var(--leading-snug);
+    letter-spacing: var(--tracking-tight);
+  }
+
+  /* Standfirst — the paragraph that carries a section. */
+  .type-lead {
+    font-size: var(--size-lead);
+    font-weight: var(--weight-regular);
+    line-height: var(--leading-normal);
+    color: var(--text-secondary);
+    text-wrap: pretty;
+  }
+
+  .type-body {
+    font-size: var(--size-body);
+    font-weight: var(--weight-regular);
+    line-height: var(--leading-normal);
+    text-wrap: pretty;
+  }
+
+  .type-caption {
+    font-size: var(--size-caption);
+    font-weight: var(--weight-regular);
+    line-height: var(--leading-snug);
+    color: var(--text-secondary);
+  }
+
+  /* The terminal eyebrow. Mono, tracked out, uppercase — this is the voice
+     that makes the product read as an instrument rather than a brochure. */
+  .type-label {
+    font-family: var(--font-jetbrains), ui-monospace, "SFMono-Regular", monospace;
+    font-size: var(--size-micro);
+    font-weight: var(--weight-medium);
+    letter-spacing: var(--tracking-terminal);
+    text-transform: uppercase;
+    color: var(--text-secondary);
+  }
+
+  /* Uppercase is a Latin device. Persian has no case, so the transform is a
+     no-op there while the wide tracking actively damages joined script —
+     letters stop connecting. Both are switched off (§9: Persian is not an
+     afterthought). */
+  [lang="fa"] .type-label {
+    font-family: var(--font-vazirmatn), var(--font-inter), system-ui, sans-serif;
+    text-transform: none;
+    letter-spacing: var(--tracking-normal);
+    font-size: var(--size-caption);
+  }
+
+  /* --- FINANCIAL TYPOGRAPHY — §10 --------------------------------------
+     Every price, percentage, R multiple, timestamp and statistic. Tabular
+     figures so digits hold their column as values update, and slashed zero so
+     a zero is never read as an O in a fill report. */
+  .type-data,
+  .numeric {
+    font-family: var(--font-jetbrains), ui-monospace, "SFMono-Regular", monospace;
+    font-variant-numeric: tabular-nums slashed-zero;
+    font-feature-settings: "tnum" 1, "zero" 1;
+    letter-spacing: var(--tracking-normal);
+  }
+
+  /* Numbers stay Latin and LTR even inside Persian copy: a price is a
+     quantity, not prose, and reversing its digit order would be wrong. */
+  [lang="fa"] .type-data,
+  [lang="fa"] .numeric {
+    unicode-bidi: isolate;
+    direction: ltr;
+    font-family: var(--font-jetbrains), ui-monospace, "SFMono-Regular", monospace;
+  }
+}
+
 /* --- COMPONENT PRIMITIVES ------------------------------------------------ */
 /* Recurring interactive shapes live here, not as arbitrary-value class strings
    repeated across components. One definition, one place to change (§9). */
@@ -304,8 +639,8 @@
     height: 2.75rem;
     padding-inline: var(--space-6);
     border-radius: var(--radius-pill);
-    font-size: var(--text-caption);
-    font-weight: 500;
+    font-size: var(--size-caption);
+    font-weight: var(--weight-medium);
     letter-spacing: var(--tracking-wide);
     text-transform: uppercase;
     white-space: nowrap;
@@ -316,30 +651,75 @@
       transform var(--dur-fast) var(--ease-out);
   }
 
-  .btn:active {
+  .btn:active:not(:disabled):not([aria-disabled="true"]) {
     transform: translateY(1px);
   }
 
+  /* Disabled is defined once on the base class, so every variant disables
+     identically and no variant can forget to. `pointer-events: none` is
+     deliberately NOT used — it would suppress the not-allowed cursor and stop
+     the control being hoverable for a tooltip explaining why. */
+  .btn:disabled,
+  .btn[aria-disabled="true"] {
+    cursor: not-allowed;
+    opacity: var(--disabled-opacity);
+    background-color: var(--disabled-surface);
+    border-color: var(--border-subtle);
+    color: var(--disabled-text);
+    transform: none;
+  }
+
+  /* --- Variants — §16 --------------------------------------------------- */
+
+  /* PRIMARY — one per view. Solid accent, the only filled control. */
   .btn-primary {
     background-color: var(--accent);
     color: var(--accent-contrast);
     border: 1px solid var(--accent);
   }
 
-  .btn-primary:hover {
+  .btn-primary:hover:not(:disabled):not([aria-disabled="true"]) {
     background-color: var(--accent-hover);
     border-color: var(--accent-hover);
   }
 
+  /* SECONDARY — equal weight, lower emphasis. Outlined in the accent so it
+     reads as a sibling of primary rather than as a ghost. */
+  .btn-secondary {
+    background-color: transparent;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+  }
+
+  .btn-secondary:hover:not(:disabled):not([aria-disabled="true"]) {
+    background-color: var(--status-info-surface);
+    border-color: var(--accent-hover);
+    color: var(--accent-hover);
+  }
+
+  /* GHOST — tertiary. Carries no colour until touched. */
   .btn-ghost {
     background-color: transparent;
     color: var(--text-secondary);
     border: 1px solid var(--border-subtle);
   }
 
-  .btn-ghost:hover {
+  .btn-ghost:hover:not(:disabled):not([aria-disabled="true"]) {
     color: var(--text-primary);
     border-color: var(--border-strong);
+  }
+
+  /* DESTRUCTIVE — outlined by default, filling only on hover. Deleting a trade
+     record should take one more moment of intent than confirming one. */
+  .btn-destructive {
+    background-color: transparent;
+    color: var(--status-danger);
+    border: 1px solid var(--status-danger);
+  }
+
+  .btn-destructive:hover:not(:disabled):not([aria-disabled="true"]) {
+    background-color: var(--status-danger);
+    color: var(--accent-contrast);
   }
 
   /* Square variant for the theme and language controls. */
@@ -347,14 +727,62 @@
     height: 2.25rem;
     min-width: 2.25rem;
     padding-inline: var(--space-3);
-    font-size: var(--text-micro);
+    font-size: var(--size-micro);
+  }
+
+  /* Below the compact breakpoint every control meets the 44px target. A phone
+     is where someone checks a position one-handed (§28). */
+  @media (max-width: 40rem) {
+    .btn-icon {
+      height: var(--target-min);
+      min-width: var(--target-min);
+    }
+  }
+
+  /* LOADING — keeps its label and its box so the layout does not jump, and
+     announces itself rather than relying on the spinner alone. */
+  .btn[data-loading="true"] {
+    cursor: progress;
+    color: transparent;
+    position: relative;
+  }
+
+  .btn[data-loading="true"]::after {
+    content: "";
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline-start: 50%;
+    width: 1em;
+    height: 1em;
+    margin-block-start: -0.5em;
+    margin-inline-start: -0.5em;
+    border: 2px solid currentColor;
+    border-block-start-color: transparent;
+    border-radius: 50%;
+    color: var(--accent-contrast);
+    animation: spin 620ms linear infinite;
+  }
+
+  .btn-ghost[data-loading="true"]::after,
+  .btn-secondary[data-loading="true"]::after,
+  .btn-destructive[data-loading="true"]::after {
+    color: var(--text-primary);
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
   }
 
   .nav-link {
     position: relative;
     display: inline-block;
     padding-block: var(--space-2);
-    font-size: var(--text-caption);
+    /* Horizontal padding lives on the link, not as a gap between wrappers, so
+       the hover/focus target covers the label rather than a hairline of it. */
+    padding-inline: var(--space-3);
+    font-size: var(--size-caption);
     color: var(--text-secondary);
     transition: color var(--dur-fast) var(--ease-out);
   }
@@ -368,10 +796,10 @@
   .nav-link::after {
     content: "";
     position: absolute;
-    inset-inline-start: 0;
+    inset-inline-start: var(--space-3);
     bottom: 0;
     height: 1px;
-    width: 100%;
+    width: calc(100% - (var(--space-3) * 2));
     background-color: var(--accent);
     transform: scaleX(0);
     transform-origin: inline-start;
@@ -381,6 +809,565 @@
   .nav-link:hover::after,
   .nav-link[aria-current="page"]::after {
     transform: scaleX(1);
+  }
+
+  /* --- LINKS — §17 -------------------------------------------------------
+     Three link roles. `.nav-link` above is the fourth, for primary navigation.
+     Interaction is deliberately quiet: an underline that draws itself, never a
+     colour change plus a weight change plus a background. */
+
+  /* Inline links inside prose. Underlined from the start — inside a paragraph
+     an underline is the affordance, and removing it until hover hides the link
+     from anyone scanning the text. */
+  .link-inline {
+    color: var(--text-primary);
+    text-decoration: underline;
+    text-decoration-color: var(--accent);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+    transition: text-decoration-color var(--motion-micro), color var(--motion-micro);
+  }
+
+  .link-inline:hover {
+    color: var(--accent);
+    text-decoration-thickness: 2px;
+  }
+
+  /* Standalone text link — a call to action that is not a button. */
+  .link-text {
+    color: var(--accent);
+    font-size: var(--size-caption);
+    text-decoration: none;
+    transition: color var(--motion-micro);
+  }
+
+  .link-text::after {
+    content: "";
+    display: inline-block;
+    /* Logical arrow: it points the way the text runs, so RTL gets ← without a
+       second rule or a mirrored asset. */
+    margin-inline-start: 0.35em;
+    transform: translateX(0);
+    transition: transform var(--motion-micro);
+  }
+
+  .link-text:hover {
+    color: var(--accent-hover);
+  }
+
+  /* External links announce themselves. The marker is generated content, so it
+     cannot be forgotten at a call site. */
+  .link-external::after {
+    content: "↗";
+    display: inline-block;
+    margin-inline-start: 0.25em;
+    font-size: 0.85em;
+    color: var(--text-muted);
+  }
+
+  /* --- INPUTS — §18 ------------------------------------------------------
+     No form components ship in this Epic. What ships is the foundation, so
+     search, filters, trade entry, login and quizzes all inherit one set of
+     states instead of each inventing them. */
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .field-label {
+    font-family: var(--font-jetbrains), ui-monospace, "SFMono-Regular", monospace;
+    font-size: var(--size-micro);
+    letter-spacing: var(--tracking-terminal);
+    text-transform: uppercase;
+    color: var(--text-secondary);
+  }
+
+  [lang="fa"] .field-label {
+    font-family: var(--font-vazirmatn), var(--font-inter), system-ui, sans-serif;
+    text-transform: none;
+    letter-spacing: var(--tracking-normal);
+    font-size: var(--size-caption);
+  }
+
+  .input {
+    inline-size: 100%;
+    min-block-size: var(--target-min);
+    padding-inline: var(--space-4);
+    padding-block: var(--space-3);
+    background-color: var(--surface);
+    color: var(--text-primary);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    font-family: inherit;
+    font-size: var(--size-body);
+    transition:
+      border-color var(--motion-micro),
+      background-color var(--motion-micro);
+  }
+
+  /* Numeric fields — a price, a stop, an R multiple — are monospaced and
+     LTR regardless of document direction, same rule as `.type-data`. */
+  .input-numeric {
+    font-family: var(--font-jetbrains), ui-monospace, "SFMono-Regular", monospace;
+    font-variant-numeric: tabular-nums slashed-zero;
+    direction: ltr;
+    text-align: start;
+  }
+
+  .input::placeholder {
+    color: var(--text-muted);
+  }
+
+  .input:hover:not(:disabled) {
+    border-color: var(--border-strong);
+  }
+
+  /* Focus is the ring only — no colour shift, no size change. The ring is the
+     signal, and doubling it up makes focus noisier without making it clearer. */
+  .input:focus-visible {
+    outline: var(--focus-ring-width) solid var(--focus-ring);
+    outline-offset: var(--focus-ring-offset);
+    border-color: var(--border-strong);
+  }
+
+  .input[data-filled="true"] {
+    border-color: var(--border-strong);
+  }
+
+  .input[aria-invalid="true"] {
+    border-color: var(--status-danger);
+    background-color: var(--status-danger-surface);
+  }
+
+  .input:disabled {
+    cursor: not-allowed;
+    background-color: var(--disabled-surface);
+    color: var(--disabled-text);
+    border-color: var(--border-subtle);
+  }
+
+  /* The error message is bound to the field, never a floating toast. */
+  .field-error {
+    font-size: var(--size-caption);
+    color: var(--status-danger);
+  }
+
+  .field-hint {
+    font-size: var(--size-caption);
+    color: var(--text-muted);
+  }
+
+  /* --- SURFACES — §13 ----------------------------------------------------
+     Four tiers plus glass. Elevation is carried by BORDER and background, not
+     by shadow: shadows read as material and physical, which is the wrong
+     register for an instrument. Shadow is reserved for things that genuinely
+     float above the page. */
+  .surface {
+    background-color: var(--surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+  }
+
+  .surface-raised {
+    background-color: var(--surface-raised);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+  }
+
+  .surface-overlay {
+    background-color: var(--surface-overlay);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-overlay);
+  }
+
+  /* Glass carries a solid fallback first, so the surface stays legible and
+     still looks deliberate wherever backdrop-filter is unavailable or the
+     user has disabled it (§13). */
+  .surface-glass {
+    background-color: var(--surface-raised);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+  }
+
+  @supports (backdrop-filter: blur(1px)) {
+    .surface-glass {
+      background-color: var(--surface-glass);
+      backdrop-filter: var(--glass-blur);
+    }
+  }
+
+  /* --- CARDS — §19 -------------------------------------------------------
+     One structural card, plus modifiers for the patterns that genuinely differ.
+     A `SetupCard` and a `LessonCard` are not different components — they are
+     the same box with different content — so they are not separate components
+     until their BEHAVIOUR diverges (§29). */
+  .card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-6);
+    background-color: var(--surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+  }
+
+  /* Interactive only when the whole card is a link or button. */
+  .card-interactive {
+    cursor: pointer;
+    transition:
+      border-color var(--motion-micro),
+      background-color var(--motion-micro),
+      transform var(--motion-micro);
+  }
+
+  .card-interactive:hover {
+    border-color: var(--border-strong);
+    transform: translateY(calc(var(--move-xs) * -0.5));
+  }
+
+  .card-interactive:focus-within {
+    border-color: var(--accent);
+  }
+
+  /* Dense variant for financial tables and dashboard tiles. */
+  .card-data {
+    gap: var(--space-2);
+    padding: var(--space-4);
+    border-radius: var(--radius-md);
+  }
+
+  /* --- CURSOR — §25 ------------------------------------------------------
+     Semantic cursor states, expressed in CSS. No custom JS cursor: that is a
+     motion feature, not a design-system one, and this Epic does not expand
+     scope into it. What is formalised here is which cursor each surface
+     shows, so a future custom cursor has a state vocabulary to bind to. */
+  .cursor-chart {
+    cursor: crosshair;
+  }
+
+  .cursor-dictionary {
+    cursor: help;
+  }
+
+  .cursor-media {
+    cursor: pointer;
+  }
+
+  .cursor-disabled,
+  [aria-disabled="true"] {
+    cursor: not-allowed;
+  }
+
+  /* --- NAVIGATION: active + mega menu — EPIC 02 §4, §5, §7 -------------- */
+
+  /* Active state is a hairline and a colour shift, not a filled pill. The bar
+     should read as an instrument panel, not a set of tabs. */
+  .nav-link-active {
+    color: var(--text-primary);
+  }
+
+  .nav-link-active::after {
+    transform: scaleX(1);
+  }
+
+  /* A button that opens a mega panel must look identical to the links beside
+     it — the user is choosing a destination, not operating a widget. */
+  button.nav-link {
+    background: none;
+    border: 0;
+    cursor: pointer;
+    /* `font: inherit` would be wrong here: the shorthand also resets
+       font-size, and since `button.nav-link` outranks `.nav-link` the trigger
+       would render at body size beside caption-sized links. Only the family
+       needs inheriting; the rest comes from .nav-link. */
+    font-family: inherit;
+    color: inherit;
+    letter-spacing: inherit;
+  }
+
+  .nav-item {
+    position: relative;
+  }
+
+  .mega-panel {
+    position: absolute;
+    inset-block-start: calc(100% + var(--space-3));
+    /* Logical inset: the panel hangs from the item's start edge, which is left
+       in LTR and right in RTL, with no second rule. */
+    inset-inline-start: 0;
+    z-index: var(--z-nav);
+    min-inline-size: 15rem;
+    padding: var(--space-4);
+    background-color: var(--surface-overlay);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-overlay);
+    animation: mega-in var(--motion-micro) backwards;
+  }
+
+  /* A panel near the end of the bar would overflow the viewport; anchoring the
+     last items from their end edge keeps them on screen in both directions. */
+  .nav-item:nth-last-child(-n + 2) .mega-panel {
+    inset-inline-start: auto;
+    inset-inline-end: 0;
+  }
+
+  @keyframes mega-in {
+    from {
+      opacity: var(--fade-from);
+      transform: translateY(calc(var(--move-xs) * -1));
+    }
+  }
+
+  .mega-heading {
+    display: block;
+    padding-block-end: var(--space-3);
+    margin-block-end: var(--space-3);
+    border-block-end: 1px solid var(--border-subtle);
+    font-size: var(--size-caption);
+    font-weight: var(--weight-medium);
+    color: var(--text-primary);
+  }
+
+  a.mega-heading:hover {
+    color: var(--accent);
+  }
+
+  .mega-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .mega-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    padding-block: var(--space-2);
+    padding-inline: var(--space-2);
+    border-radius: var(--radius-sm);
+    font-size: var(--size-caption);
+    color: var(--text-secondary);
+    transition: color var(--motion-micro), background-color var(--motion-micro);
+  }
+
+  a.mega-item:hover,
+  a.mega-item[aria-current="page"] {
+    color: var(--text-primary);
+    background-color: var(--surface-raised);
+  }
+
+  .mega-item-planned {
+    color: var(--text-muted);
+    cursor: default;
+  }
+
+  .mega-badge {
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  /* --- SEARCH TRIGGER --------------------------------------------------- */
+
+  .search-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    block-size: 2.25rem;
+    padding-inline: var(--space-3);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-pill);
+    background-color: transparent;
+    color: var(--text-secondary);
+    font-size: var(--size-caption);
+    cursor: pointer;
+    transition: border-color var(--motion-micro), color var(--motion-micro);
+  }
+
+  .search-trigger:hover {
+    border-color: var(--border-strong);
+    color: var(--text-primary);
+  }
+
+  /* The word is hidden on narrow bars, but the control keeps its accessible
+     name through aria-label, so it never becomes an unlabelled icon button. */
+  .search-trigger-text {
+    display: none;
+  }
+
+  .search-kbd {
+    display: none;
+    padding-inline: var(--space-2);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    font-size: var(--size-micro);
+    color: var(--text-muted);
+    /* A keyboard shortcut is a Latin token; it stays LTR inside Persian. */
+    direction: ltr;
+    unicode-bidi: isolate;
+  }
+
+  /* 80rem, not 64rem: at 1024px the six nav items, the toggles and the CTA
+     already fill the bar, and the search label pushed it 3.8px over. */
+  @media (min-width: 80rem) {
+    .search-trigger-text,
+    .search-kbd {
+      display: inline-flex;
+      align-items: center;
+    }
+  }
+
+  .nav-controls {
+    display: none;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  @media (min-width: 30rem) {
+    .nav-controls {
+      display: flex;
+    }
+  }
+
+  .brand-short {
+    display: none;
+  }
+
+  @media (max-width: 30rem) {
+    .brand-full {
+      display: none;
+    }
+    .brand-short {
+      display: inline;
+    }
+  }
+
+  @media (max-width: 40rem) {
+    .search-trigger {
+      block-size: var(--target-min);
+      min-inline-size: var(--target-min);
+      justify-content: center;
+    }
+  }
+
+  /* --- COMMAND PALETTE — §9 --------------------------------------------- */
+
+  .palette-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-overlay);
+    display: flex;
+    justify-content: center;
+    padding-block-start: 12vh;
+    padding-inline: var(--gutter);
+    background-color: var(--scrim);
+    animation: fade-in var(--motion-micro) backwards;
+  }
+
+  @supports (backdrop-filter: blur(1px)) {
+    .palette-scrim {
+      backdrop-filter: var(--glass-blur);
+    }
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: var(--fade-from);
+    }
+  }
+
+  .palette {
+    inline-size: 100%;
+    max-inline-size: var(--container-narrow);
+    max-block-size: 70vh;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--surface-overlay);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-overlay);
+    overflow: hidden;
+    animation: palette-in var(--motion-interaction) backwards;
+  }
+
+  @keyframes palette-in {
+    from {
+      opacity: var(--fade-from);
+      transform: translateY(var(--move-sm)) scale(var(--scale-from));
+    }
+  }
+
+  .palette-field {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    border-block-end: 1px solid var(--border-subtle);
+  }
+
+  .palette-icon {
+    color: var(--text-muted);
+  }
+
+  .palette-input {
+    flex: 1;
+    min-inline-size: 0;
+    background: none;
+    border: 0;
+    outline: none;
+    color: var(--text-primary);
+    font: inherit;
+    font-size: var(--size-body);
+  }
+
+  .palette-input::placeholder {
+    color: var(--text-muted);
+  }
+
+  .palette-list {
+    list-style: none;
+    margin: 0;
+    padding: var(--space-2);
+    overflow-y: auto;
+  }
+
+  .palette-option {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-4);
+    padding: var(--space-3);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    color: var(--text-primary);
+  }
+
+  /* Driven by data-active, not :hover — arrow-key users must see the same
+     indication a pointer user gets. */
+  .palette-option[data-active="true"] {
+    background-color: var(--surface-raised);
+  }
+
+  .palette-option[aria-disabled="true"] {
+    color: var(--text-muted);
+    cursor: default;
+  }
+
+  .palette-option-sub {
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  .palette-empty {
+    padding: var(--space-6) var(--space-4);
+    color: var(--text-muted);
+    text-align: center;
   }
 
   /* --- Navbar states — §15 ---------------------------------------------- */
@@ -410,14 +1397,14 @@
   .site-header[data-state="menu-open"] {
     height: var(--nav-h-scrolled);
     background-color: var(--scrim);
-    backdrop-filter: blur(14px) saturate(1.4);
+    backdrop-filter: var(--glass-blur);
     border-bottom-color: var(--border-subtle);
   }
 
   .site-header[data-state="hidden"] {
     height: var(--nav-h-scrolled);
     background-color: var(--scrim);
-    backdrop-filter: blur(14px) saturate(1.4);
+    backdrop-filter: var(--glass-blur);
     border-bottom-color: var(--border-subtle);
     transform: translateY(-100%);
   }
@@ -429,9 +1416,10 @@
   }
 
   .site-brand {
-    font-family: var(--font-display);
-    font-size: var(--text-caption);
-    font-weight: 600;
+    /* The wordmark stays Latin in both locales — it is a name, not copy. */
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: var(--size-caption);
+    font-weight: var(--weight-semibold);
     letter-spacing: var(--tracking-terminal);
     text-transform: uppercase;
     color: var(--text-primary);
@@ -448,18 +1436,124 @@
     position: fixed;
     inset: 0;
     z-index: var(--z-menu);
+    /* dvh tracks iOS Safari's collapsing toolbar; vh leaves the footer cropped
+       under it for the whole scroll (EPIC 02 §8). */
+    block-size: 100dvh;
+    background-color: var(--canvas);
+    /* Safe-area insets keep controls clear of the notch and home indicator. */
+    padding-block-start: max(var(--nav-h-scrolled), env(safe-area-inset-top));
+    padding-block-end: max(var(--space-6), env(safe-area-inset-bottom));
+    padding-inline-start: max(0px, env(safe-area-inset-left));
+    padding-inline-end: max(0px, env(safe-area-inset-right));
+    overflow: hidden;
+  }
+
+  .menu-scroll {
+    block-size: 100%;
     display: flex;
     flex-direction: column;
+    gap: var(--space-6);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-block: var(--space-6);
+  }
+
+  .menu-search {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    inline-size: 100%;
+    min-block-size: var(--target-min);
+    padding-inline: var(--space-4);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    background-color: var(--surface);
+    color: var(--text-secondary);
+    font-size: var(--size-body);
+    cursor: pointer;
+  }
+
+  .menu-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    flex: 1;
+  }
+
+  .menu-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    border-block-end: 1px solid var(--border-subtle);
+  }
+
+  .menu-disclosure {
+    display: inline-flex;
+    align-items: center;
     justify-content: center;
-    background-color: var(--canvas);
-    padding-inline: var(--gutter);
-    padding-block: var(--nav-h-scrolled);
+    min-inline-size: var(--target-min);
+    min-block-size: var(--target-min);
+    background: none;
+    border: 0;
+    color: var(--text-secondary);
+    cursor: pointer;
+  }
+
+  .menu-disclosure span {
+    transition: transform var(--motion-micro);
+  }
+
+  .menu-disclosure [data-open="true"] {
+    transform: rotate(180deg);
+  }
+
+  .menu-sublist {
+    list-style: none;
+    margin: 0;
+    padding-block: var(--space-2);
+    /* Indents from the start edge, so RTL indents from the right. */
+    padding-inline-start: var(--space-4);
+    animation: mega-in var(--motion-micro) backwards;
+  }
+
+  .menu-subitem {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    min-block-size: var(--target-min);
+    font-size: var(--size-body);
+    color: var(--text-secondary);
+  }
+
+  .menu-subitem-planned {
+    color: var(--text-muted);
+  }
+
+  .menu-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    /* Wraps rather than overflowing: the toggles and a full-width CTA do not
+       share a 390px row. */
+    flex-wrap: wrap;
+    gap: var(--space-4);
+    padding-block-start: var(--space-6);
+    border-block-start: 1px solid var(--border-subtle);
+  }
+
+  .menu-footer > .btn-primary {
+    flex: 1;
+    min-inline-size: 12rem;
   }
 
   .menu-item {
     display: block;
-    font-family: var(--font-display);
-    font-size: var(--text-h2);
+    flex: 1;
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: var(--size-h2);
     letter-spacing: var(--tracking-tight);
     line-height: 1.15;
     color: var(--text-primary);
@@ -469,8 +1563,8 @@
     animation-delay: calc(var(--i, 0) * 55ms);
   }
 
-  .menu-item[aria-disabled="true"] {
-    color: var(--text-secondary);
+  .menu-item-active {
+    color: var(--accent);
   }
 
   @keyframes menu-reveal {
@@ -486,27 +1580,6 @@
     }
   }
 
-  /* Sections whose page is still a placeholder get a marker rather than being
-     hidden or disabled. The information architecture is real from day one —
-     the URLs resolve, the shell renders, the content is honest about its
-     state (§68). The dot is what stops a visitor clicking through six of them
-     to find that out. */
-  .nav-pending {
-    position: relative;
-    padding-inline-end: 0.65em;
-  }
-
-  .nav-pending::before {
-    content: "";
-    position: absolute;
-    inset-inline-end: 0;
-    inset-block-start: 0.55em;
-    width: 3px;
-    height: 3px;
-    border-radius: 50%;
-    background-color: var(--accent);
-    opacity: 0.75;
-  }
 }
 
 /* --- UTILITIES ----------------------------------------------------------- */
@@ -519,14 +1592,9 @@
     padding-inline: var(--gutter);
   }
 
-  /* Terminal-style eyebrow label used across sections. */
-  .label-terminal {
-    font-family: var(--font-mono);
-    font-size: var(--text-micro);
-    letter-spacing: var(--tracking-terminal);
-    text-transform: uppercase;
-    color: var(--text-secondary);
-  }
+  /* The eyebrow label lives in the typography roles as `.type-label`. It was
+     duplicated here as `.label-terminal` with a second, slightly different
+     definition and no Persian handling. */
 
   /* One hairline of "precision light" (§6). */
   .rule-accent {
@@ -545,6 +1613,20 @@
   [lang="fa"] [data-locale-only]:not([data-locale-only="fa"]),
   [lang="en"] [data-locale-only]:not([data-locale-only="en"]) {
     display: none;
+  }
+
+  /* Announced but not shown — live regions and labels that a screen reader
+     needs and a sighted user does not. */
+  .sr-only {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
   }
 
   .sr-only-focusable:not(:focus):not(:focus-within) {

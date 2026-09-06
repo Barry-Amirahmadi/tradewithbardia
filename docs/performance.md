@@ -12,7 +12,7 @@ commands are below. Automating it belongs with CI, not with Phase 0.
 
 | Metric | Measured | Budget | Headroom |
 |---|---|---|---|
-| Initial JS, gzipped (`/fa`) | **185 KB** | **220 KB** | 35 KB |
+| Initial JS, gzipped (`/fa`) | **187 KB** | **220 KB** | 33 KB |
 | Initial JS, raw | 600 KB | 700 KB | 100 KB |
 | Scripts on first load | 9 | 12 | 3 |
 | HTML document, raw | 86 KB | 110 KB | 24 KB |
@@ -32,6 +32,25 @@ annotations. That is a deliberate trade: it buys a complete, meaningful chart
 with zero JavaScript and no layout shift, and it is the thing that makes the
 §50 fallback chain real rather than decorative. If the document budget is ever
 under pressure, reduce the fallback's candle count before removing it.
+
+## Navigation (EPIC 02)
+
+Navigation is global infrastructure — it exists on every page — so its budget
+is separate from the page's.
+
+| Metric | Measured | Budget |
+|---|---|---|
+| Command palette chunk | **5 KB** raw, code-split | 25 KB |
+| Added runtime dependencies | **0** | 0 |
+| Scroll listeners added | **0** | 0 |
+| RAF chains added | **0** | 0 |
+| React renders per scroll frame | **0** | 0 |
+
+The palette is code-split behind `next/dynamic` and never server-rendered: a
+page that is never searched does not download it. The mega panels render only
+while open, so six panels' worth of links never sit in the tab order.
+
+No WebGL, Three.js or canvas instance is created by navigation.
 
 ## Animation
 

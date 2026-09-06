@@ -46,7 +46,7 @@ export async function generateMetadata({
 
   const dictionary = await getDictionary(locale);
   return {
-    title: `${dictionary.nav[item.key]} — ${dictionary.nav.brand}`,
+    title: `${dictionary.nav[item.labelKey]} — ${dictionary.nav.brand}`,
     description: dictionary.section.body,
     alternates: {
       canonical: `/${locale}/${section}`,
@@ -75,11 +75,11 @@ export default async function SectionPage({
 
   return (
     <PageMain className="container-page flex min-h-[100svh] flex-col justify-center py-[var(--space-32)]">
-      <p className="label-terminal text-accent">{dictionary.section.eyebrow}</p>
-      <h1 className="mt-6 max-w-[16ch] text-[length:var(--text-h1)] font-medium">
-        {dictionary.nav[item.key]}
+      <p className="type-label text-accent">{dictionary.section.eyebrow}</p>
+      <h1 className="mt-6 max-w-[16ch] type-h1">
+        {dictionary.nav[item.labelKey]}
       </h1>
-      <p className="mt-6 max-w-[var(--container-text)] text-[length:var(--text-lead)] text-secondary">
+      <p className="mt-6 max-w-[var(--container-text)] type-lead">
         {dictionary.section.title}
       </p>
       <p className="mt-3 max-w-[var(--container-text)] text-secondary">

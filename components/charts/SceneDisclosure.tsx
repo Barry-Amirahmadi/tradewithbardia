@@ -34,9 +34,10 @@ export default function SceneDisclosure({
   return (
     <p
       data-provenance={scene.provenance}
-      className={
-        className ?? "text-[length:var(--text-micro)] text-secondary"
-      }
+      // Caption, not label: a disclosure is the one piece of small print that
+      // must actually be read, so it takes the readable 13px caption role
+      // rather than the 11px tracked-out eyebrow.
+      className={className ?? "type-caption"}
     >
       {labels[scene.provenance]}
     </p>
