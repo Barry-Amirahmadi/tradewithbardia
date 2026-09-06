@@ -1,6 +1,7 @@
 import type { Locale } from "../i18n/config";
 import type { AcademyIndex } from "./academy-provider";
 import type { ConceptIndex } from "./concept-provider";
+import type { DictionaryIndex } from "./dictionary-provider";
 import type { SetupIndex } from "./setup-provider";
 
 /**
@@ -46,4 +47,9 @@ export async function loadSetupIndex(locale: Locale): Promise<SetupIndex> {
 export async function loadAcademyIndex(locale: Locale): Promise<AcademyIndex> {
   const dict = await dictionary(locale);
   return { academy: dict.academy, concepts: dict.concepts };
+}
+
+export async function loadDictionaryIndex(locale: Locale): Promise<DictionaryIndex> {
+  const dict = await dictionary(locale);
+  return { concepts: dict.concepts, dict: dict.dict };
 }

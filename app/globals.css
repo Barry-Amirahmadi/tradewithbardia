@@ -2506,6 +2506,189 @@
     gap: var(--space-3);
   }
 
+  /* --- TRADING DICTIONARY — EPIC 07 §10, §32 ----------------------------
+     A knowledge interface: search first, categories second, entries as rows.
+     Not an archive grid — the reader is looking something up, not browsing. */
+
+  .dict-header { max-inline-size: var(--container-wide); }
+
+  .dict-browser { margin-block-start: var(--space-12); }
+
+  .dict-controls {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+    margin-block-end: var(--space-8);
+  }
+
+  .dict-search { display: flex; }
+
+  .dict-search input {
+    inline-size: 100%;
+    max-inline-size: 34rem;
+    padding-inline: var(--space-4);
+    padding-block: var(--space-3);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-md);
+    background-color: var(--surface);
+    color: var(--text-primary);
+    font: inherit;
+  }
+
+  .dict-search input::placeholder { color: var(--text-disabled); }
+
+  .dict-categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    border: 0;
+    margin: 0;
+    padding: 0;
+  }
+
+  .dict-chip { display: inline-flex; cursor: pointer; }
+
+  .dict-chip input {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .dict-chip span {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--space-2);
+    padding-inline: var(--space-3);
+    padding-block: var(--space-1);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-pill);
+    color: var(--text-secondary);
+    font-size: var(--size-caption);
+    transition:
+      color var(--dur-fast) var(--ease-precision),
+      border-color var(--dur-fast) var(--ease-precision);
+  }
+
+  .dict-chip input:checked + span {
+    color: var(--text-primary);
+    border-color: var(--accent);
+  }
+
+  .dict-chip input:focus-visible + span {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .dict-chip-count { color: var(--text-disabled); }
+
+  .dict-list {
+    margin: var(--space-6) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .dict-list li { border-block-end: 1px solid var(--border-subtle); }
+
+  .dict-entry {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding-block: var(--space-6);
+    color: inherit;
+    text-decoration: none;
+    transition: background-color var(--dur-fast) var(--ease-precision);
+  }
+
+  .dict-entry:hover,
+  .dict-entry:focus-visible { background-color: var(--surface); }
+
+  .dict-entry-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--space-3);
+  }
+
+  .dict-entry-abbr { color: var(--text-muted); }
+  .dict-entry-category { color: var(--accent); }
+  .dict-entry-def { max-inline-size: var(--container-text); }
+
+  .dict-empty { margin-block-start: var(--space-8); color: var(--text-muted); }
+
+  /* --- TERM PAGE --------------------------------------------------------- */
+
+  .dict-term-header { margin-block-start: var(--space-8); }
+
+  .dict-term-abbr {
+    margin-inline-start: var(--space-4);
+    color: var(--text-muted);
+    font-size: var(--size-h3);
+  }
+
+  .dict-aliases { margin-block-start: var(--space-4); }
+
+  .dict-definition {
+    margin-block-start: var(--space-12);
+    border-block-start: 1px solid var(--border-subtle);
+    padding-block-start: var(--space-6);
+  }
+
+  .dict-short,
+  .dict-full {
+    margin-block-start: var(--space-4);
+    max-inline-size: var(--container-text);
+  }
+
+  .dict-relation { margin-block-start: var(--space-16); }
+
+  .dict-relation-list {
+    margin: var(--space-4) 0 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  @media (width >= 48rem) {
+    .dict-relation-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+
+  .dict-relation-list a {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    block-size: 100%;
+    padding: var(--space-6);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    color: inherit;
+    text-decoration: none;
+    transition: border-color var(--dur-fast) var(--ease-precision);
+  }
+
+  .dict-relation-list a:hover,
+  .dict-relation-list a:focus-visible { border-color: var(--accent); }
+
+  .dict-relation-list a span:last-child { font-size: var(--size-caption); }
+
+  .dict-stage {
+    margin-block-start: var(--space-16);
+    padding: var(--space-8);
+    border-inline-start: 2px solid var(--accent);
+    background-color: var(--surface);
+  }
+
+  /* The concept card gains a way into the dictionary — EPIC 07 §13, §21. */
+  .concept-panel-link {
+    color: var(--accent);
+    text-decoration: none;
+    margin-block-start: var(--space-1);
+  }
+
+  .concept-panel-link:hover { text-decoration: underline; }
+
   /* --- CHART OVERLAY — EPIC 03 §12 --------------------------------------
      The undistorted half of the static renderer. The SVG beneath is stretched
      to fill its box, which is correct for candles and price lines and wrong

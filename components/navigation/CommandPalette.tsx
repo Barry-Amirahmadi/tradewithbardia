@@ -10,7 +10,13 @@ import { useDismissableLayer } from "@/lib/interaction/use-dismissable-layer";
 import { prefersReducedMotion } from "@/lib/motion/frame-loop";
 import { createAcademyProvider } from "@/lib/search/academy-provider";
 import { createConceptProvider } from "@/lib/search/concept-provider";
-import { loadAcademyIndex, loadConceptIndex, loadSetupIndex } from "@/lib/search/indexes";
+import { createDictionaryProvider } from "@/lib/search/dictionary-provider";
+import {
+  loadAcademyIndex,
+  loadConceptIndex,
+  loadDictionaryIndex,
+  loadSetupIndex,
+} from "@/lib/search/indexes";
 import { createSetupProvider } from "@/lib/search/setup-provider";
 import {
   createCommandProvider,
@@ -105,6 +111,7 @@ export default function CommandPalette({ open, onClose, locale, nav }: Props) {
       registerSearchProvider(createConceptProvider(() => loadConceptIndex(locale))),
       registerSearchProvider(createSetupProvider(() => loadSetupIndex(locale))),
       registerSearchProvider(createAcademyProvider(() => loadAcademyIndex(locale))),
+      registerSearchProvider(createDictionaryProvider(() => loadDictionaryIndex(locale))),
     ];
     return () => unregister.forEach((fn) => fn());
   }, [nav, locale]);

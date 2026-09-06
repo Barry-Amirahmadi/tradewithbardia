@@ -172,79 +172,98 @@
   "concepts": {
     "market": {
       "term": "Market",
-      "definition": "The continuous stream of price and participation, before any interpretation is applied to it."
+      "definition": "The continuous stream of price and participation, before any interpretation is applied to it.",
+      "full": "The market is the continuous stream of price and participation before anyone interprets it. It produces movement constantly, and almost none of that movement is an opportunity — it is information about positioning: who had to buy, who had to sell, and where. Treating every move as a signal mistakes activity for meaning. Reading the market therefore starts with narrowing attention rather than widening it."
     },
     "context": {
       "term": "Context",
-      "definition": "The conditions surrounding a possible trade: session, higher-timeframe direction, range and volatility."
+      "definition": "The conditions surrounding a possible trade: session, higher-timeframe direction, range and volatility.",
+      "full": "Context is the set of conditions surrounding a possible trade: which session is active, what the higher timeframe is doing, whether price is in a range or trending, and which levels are in play. It is decided before any entry is considered, because it answers a prior question — whether a setup is worth looking for at all. A valid setup in the wrong context is a rule applied where it does not hold."
     },
     "liquidity": {
       "term": "Liquidity",
-      "definition": "Areas where resting orders accumulate, which price tends to move toward rather than away from."
+      "definition": "Areas where resting orders accumulate, which price tends to move toward rather than away from.",
+      "full": "Liquidity describes the areas where resting orders accumulate: above obvious highs, below obvious lows, and around levels a large number of participants can see. The idea reverses a common intuition. An obvious level is not a barrier that stops price; it is a reason for price to travel there, because that is where orders waiting to be filled are sitting. Liquidity is therefore best read as a destination rather than as resistance."
     },
     "structure": {
       "term": "Structure",
-      "definition": "The sequence of swing highs and lows that describes direction in a way that can be checked."
+      "definition": "The sequence of swing highs and lows that describes direction in a way that can be checked.",
+      "full": "Structure is the sequence of swing highs and lows, and its value is that it turns direction into something that can be checked and disagreed with. A trend is not an impression but a series of higher highs and higher lows that either continues or does not. Because the swing points exist before the move that breaks them, a structural claim can be stated in advance and evaluated afterwards."
     },
     "setup": {
       "term": "Setup",
-      "definition": "A written specification of conditions that together identify a candidate trade."
+      "definition": "A written specification of conditions that together identify a candidate trade.",
+      "full": "A setup is a written specification: the conditions that must hold together for a trade to be a candidate, and the point at which it is no longer valid. Context, liquidity and structure each contribute; none of them alone is a reason to act. The defining property is that it can be written down before the session. A pattern recognised after the move is a memory of a setup, not a setup."
     },
     "execution": {
       "term": "Execution",
-      "definition": "Opening a defined position once its trigger conditions are met."
+      "definition": "Opening a defined position once its trigger conditions are met.",
+      "full": "Execution is the moment analysis becomes a position. The entry is defined by a trigger condition rather than by conviction, and it is decided together with invalidation and target before any risk is taken. The distinction that matters is between decision and outcome: a trade that moved favourably was not correct for that reason, and one that did not was not therefore wrong."
     },
     "risk": {
       "term": "Risk",
-      "definition": "The predetermined amount a trade is allowed to cost, decided before entry."
+      "definition": "The predetermined amount a trade is allowed to cost, decided before entry.",
+      "full": "Risk is the predetermined amount a trade is allowed to cost. It is decided first because it is the only part of a trade fully under control. Invalidation is chosen from structure, and position size then follows arithmetically from that distance. Choosing size first and placing a stop where that size permits inverts the logic and turns a defensible idea into an indefensible trade."
     },
     "review": {
       "term": "Review",
-      "definition": "Assessment of whether the process was followed, kept separate from whether the trade profited."
+      "definition": "Assessment of whether the process was followed, kept separate from whether the trade profited.",
+      "full": "Review is the assessment of whether the process was followed, deliberately kept separate from whether the trade profited. The two are independent facts, and conflating them is how a lucky outcome becomes a habit and a disciplined loss becomes a doubt. A rule followed on a losing trade is a good trade; a rule broken on a winning one is the expensive case."
     },
     "data": {
       "term": "Data",
-      "definition": "Accumulated trade records treated as a sample, used to describe the process rather than to justify it."
+      "definition": "Accumulated trade records treated as a sample, used to describe the process rather than to justify it.",
+      "full": "Data is what accumulated trade records become once enough of them are captured the same way. Individually, trades are anecdotes and describe nothing. As a sample they begin to describe the process itself, which is the only honest basis for changing it. This is also where the loop closes: what the data shows changes what counts as context next time."
     },
     "equalHighs": {
       "term": "Equal highs",
-      "definition": "Two or more highs at effectively the same price, marking a pool of resting orders above them."
+      "definition": "Two or more highs at effectively the same price, marking a pool of resting orders above them.",
+      "full": "Equal highs are two or more highs at effectively the same price, forming a level that a large number of participants can see. Orders accumulate above them, which is what makes the level a likely destination rather than a ceiling. The more obvious the pair of highs, the more reliably it functions as a draw on price."
     },
     "equalLows": {
       "term": "Equal lows",
-      "definition": "Two or more lows at effectively the same price, marking a pool of resting orders below them."
+      "definition": "Two or more lows at effectively the same price, marking a pool of resting orders below them.",
+      "full": "Equal lows are two or more lows at effectively the same price. Orders accumulate beneath them for the same reason equal highs attract orders above, and the level behaves as a draw rather than as support. Which side of a range is taken first is information about intent, not noise."
     },
     "sweep": {
       "term": "Sweep",
-      "definition": "Price trading through a liquidity level and rejecting, taking the orders resting there."
+      "definition": "Price trading through a liquidity level and rejecting, taking the orders resting there.",
+      "full": "A sweep is price trading through a liquidity level and rejecting, taking the orders resting there in the process. It is the level working rather than the level failing. On its own a sweep is not a reason to trade; it becomes meaningful when the move that follows it breaks structure in the opposite direction."
     },
     "bos": {
       "term": "Break of structure",
-      "definition": "Price closing beyond a prior swing point in the direction of the existing trend."
+      "definition": "Price closing beyond a prior swing point in the direction of the existing trend.",
+      "full": "A break of structure is price closing beyond a prior swing point in the direction of the existing trend. The close matters: a wick through a level without a close beyond it has not broken anything that can be measured. A break of structure describes continuation, which is what distinguishes it from a market structure shift."
     },
     "mss": {
       "term": "Market structure shift",
-      "definition": "A break of structure against the prevailing direction, defining a change rather than a continuation."
+      "definition": "A break of structure against the prevailing direction, defining a change rather than a continuation.",
+      "full": "A market structure shift is a break of structure against the prevailing direction. Where a break of structure describes continuation, a shift defines a change — and because the swing point it breaks existed beforehand, the claim can be checked rather than asserted. It is most meaningful immediately after liquidity has been taken."
     },
     "displacement": {
       "term": "Displacement",
-      "definition": "An impulsive move that leaves imbalance behind, separating intent from ordinary movement."
+      "definition": "An impulsive move that leaves imbalance behind, separating intent from ordinary movement.",
+      "full": "Displacement is an impulsive move that separates intent from ordinary movement. Its useful by-product is imbalance: when price moves quickly enough, it leaves a range where trading was effectively one-sided. A wide candle in slow conditions is not displacement; the distinction is worth recording, because only one of the two leaves a location behind."
     },
     "fvg": {
       "term": "Fair value gap",
-      "definition": "The unfilled price range left behind by an impulsive move, often used as a location to act from."
+      "definition": "The unfilled price range left behind by an impulsive move, often used as a location to act from.",
+      "full": "A fair value gap is the unfilled price range left behind by an impulsive move, visible as the space between one candle's low and another's high across the leg. It converts a direction into a location: without it you know which way to look, and with it you know where to act. If price never returns to the gap, there is no trade."
     },
     "entry": {
       "term": "Entry",
-      "definition": "The specific price and condition at which a position is opened."
+      "definition": "The specific price and condition at which a position is opened.",
+      "full": "Entry is the specific price and condition at which a position is opened. It is a decision point, not an outcome. Defining it by a trigger rather than by conviction is what makes it reviewable afterwards — a trade can then be judged on whether the condition was met, independently of what price did next."
     },
     "invalidation": {
       "term": "Invalidation",
-      "definition": "The price at which the reason for the trade no longer holds."
+      "definition": "The price at which the reason for the trade no longer holds.",
+      "full": "Invalidation is the price at which the reason for the trade no longer holds. It is chosen from structure rather than from a comfortable distance, which is what makes it a statement about the market rather than about the account. If invalidation cannot be stated, there is no specification and therefore no setup."
     },
     "positionSize": {
       "term": "Position size",
-      "definition": "The quantity chosen so that reaching invalidation costs the predetermined amount."
+      "definition": "The quantity chosen so that reaching invalidation costs the predetermined amount.",
+      "full": "Position size is the quantity chosen so that reaching invalidation costs exactly the predetermined amount. It is computed from the stop distance, never the other way round. When the resulting size is uncomfortably small, the honest conclusion is that the setup does not suit the account at present, not that the stop should be moved."
     }
   },
   "lab": {
@@ -538,6 +557,39 @@
           "One trade is an anecdote; the sample is the evidence."
         ]
       }
+    }
+  },
+  "dict": {
+    "eyebrow": "Trading dictionary",
+    "title": "The language of the market, defined once",
+    "lead": "Nineteen concepts, each defined in one place and referenced everywhere else on this site. Every entry links to where the concept is taught, where it appears in the process, and which setups are built from it.",
+    "searchLabel": "Search the dictionary",
+    "searchPlaceholder": "Search a term, an abbreviation, or a Persian word",
+    "categoriesLabel": "Categories",
+    "allCategories": "All",
+    "resultsOne": "1 concept",
+    "resultsMany": "{n} concepts",
+    "empty": "No concept matches that.",
+    "backToDictionary": "Back to the dictionary",
+    "openDictionary": "Open in dictionary",
+    "shortLabel": "In short",
+    "fullLabel": "In full",
+    "relatedLabel": "Related concepts",
+    "prerequisitesLabel": "Understand first",
+    "childrenLabel": "Part of this concept",
+    "lessonLabel": "Learn this",
+    "setupsLabel": "Setups that use it",
+    "stageLabel": "In the trading system",
+    "stageCta": "See the whole process",
+    "alsoKnownAs": "Also known as",
+    "categories": {
+      "market": "Market",
+      "liquidity": "Liquidity",
+      "structure": "Structure",
+      "setup": "Setup",
+      "execution": "Execution",
+      "risk": "Risk",
+      "review": "Review"
     }
   },
   "viz": {

@@ -35,7 +35,7 @@ export const dynamicParams = false;
  * produces two builders for one URL — so the list is filtered rather than
  * left to resolve by precedence.
  */
-const dedicated = new Set(["setups", "systems", "academy"]);
+const dedicated = new Set(["setups", "systems", "academy", "dictionary"]);
 
 export function generateStaticParams() {
   return locales.flatMap((locale) =>

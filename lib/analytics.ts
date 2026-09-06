@@ -39,7 +39,11 @@ export type AnalyticsEvent =
   // Free Academy (EPIC 06). Ids are canonical lesson and concept ids.
   | "academy_view"
   | "academy_lesson_open"
-  | "academy_lesson_complete";
+  | "academy_lesson_complete"
+  // Dictionary (EPIC 07). Ids are canonical concept ids.
+  | "dictionary_view"
+  | "dictionary_search"
+  | "dictionary_term_open";
 
 /**
  * Payloads carry identifiers and UI state only. No free text from a user, no

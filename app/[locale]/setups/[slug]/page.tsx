@@ -128,14 +128,28 @@ export default async function SetupDetailPage({
         <h2 className="type-label text-accent">{lab.conceptsLabel}</h2>
         <p className="setup-concept-row">
           {setup.conceptIds.map((id) => (
-            <ConceptNode key={id} id={id} concepts={concepts} surface="setup-detail" />
+            <ConceptNode
+              key={id}
+              id={id}
+              concepts={concepts}
+              locale={locale}
+              dict={dictionary.dict}
+              surface="setup-detail"
+            />
           ))}
         </p>
 
         <h2 className="mt-8 type-label text-accent">{lab.prerequisitesLabel}</h2>
         <p className="setup-concept-row">
           {setup.prerequisites.map((id) => (
-            <ConceptNode key={id} id={id} concepts={concepts} surface="setup-detail" />
+            <ConceptNode
+              key={id}
+              id={id}
+              concepts={concepts}
+              locale={locale}
+              dict={dictionary.dict}
+              surface="setup-detail"
+            />
           ))}
         </p>
       </section>

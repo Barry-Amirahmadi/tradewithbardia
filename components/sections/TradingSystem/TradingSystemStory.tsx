@@ -58,6 +58,10 @@ export default function TradingSystemStory({
               id={`system-${stage.id}`}
               className="system-stage"
               data-stage={stage.id}
+              // A stage IS a concept (EPIC 04), so it carries the canonical id
+              // as well. Without this, `liquidity` was findable on every
+              // surface except the one that introduces it.
+              data-concept={stage.id}
             >
               <article>
                 <p className="system-stage-index type-data">
@@ -81,6 +85,8 @@ export default function TradingSystemStory({
                         key={id}
                         id={id}
                         concepts={concepts}
+                        locale={locale}
+                        dict={dictionary.dict}
                         surface="trading-system"
                       />
                     ))}

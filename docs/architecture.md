@@ -442,6 +442,78 @@ stays `learn` because that is the dictionary label key, not the route. The
 generic `[section]` route excludes every segment that owns a dedicated route,
 so one URL never has two builders.
 
+## The trading dictionary
+
+EPIC 07. The Dictionary is a **surface over `TradingConcept`**, not a registry
+of its own — the fourth consumer of the EPIC 04 model and the one that makes it
+user-facing.
+
+### Identity, content and presentation are three things
+
+| Layer | Where it lives |
+|---|---|
+| Identity | `TradingConceptId` in `concepts.ts` |
+| Content | `concepts.<id>.{term, definition, full}` in each locale file |
+| Entry metadata | `dictionary.ts` — category, aliases, status |
+| Presentation | the route and its components |
+
+`DictionaryEntry` has **no `id` field and no `slug` field**. It is addressed by
+`conceptId`, and a test asserts that neither key ever appears — the moment an
+entry acquires its own primary key, there are two identities for one idea.
+
+The slug is *derived* (`slugForConcept`), so the URL is a presentation concern
+that can change without touching identity: `equalHighs` → `/dictionary/equal-highs`.
+One canonical slug per concept means one canonical route per localized concept.
+
+### Every relationship is derived
+
+The term page shows prerequisites, children, related concepts, the Academy
+lesson, the setups and the Trading System stage. **None of it is authored
+there.** `conceptContext()` reads the canonical graph and the existing reverse
+edges (`lessonForConcept`, `setupsForConcept`); a test asserts no entry stores
+`related`, `prerequisites`, `parent`, `lessons` or `setups`.
+
+Empty relationships render nothing. A concept with no lesson gets no lesson
+block rather than a placeholder.
+
+### One definition, four surfaces
+
+`concepts.<id>.definition` was already the canonical short definition before
+this epic — the concept chip, the search result and the Trading System all
+showed it. EPIC 07 added `full` beside it and gave it a page. There is still
+exactly one definition per concept; the Dictionary is where it is *published*,
+not a second copy.
+
+`data-concept="<id>"` now appears on every surface that references a concept —
+including the Trading System stages, which carried `data-stage` but not their
+concept id until browser QA caught it. A future Dictionary crawler, analytics
+sink or AI layer can find every occurrence without parsing display text.
+
+### The contextual concept card
+
+`ConceptNode` gained hover on pointer devices and a link into the Dictionary.
+It is a **local disclosure, not a modal**: deliberately not built on
+`useDismissableLayer`, because that hook traps focus and locks scrolling —
+correct for the command palette, wrong for an inline definition the reader
+scrolls past.
+
+Hover is an enhancement only. `pointerType !== "mouse"` returns early, so touch
+gets tap-to-toggle and keyboard gets Enter; nothing is reachable by hovering
+alone. The card is intentionally brief — title, short definition, and a way to
+the full entry.
+
+### Search
+
+The fifth provider, registered and loaded exactly like the fourth. §34 asked
+for an audit of the provider architecture; the answer is that it is sufficient
+and was left alone.
+
+The index is **metadata only**: term, abbreviation, aliases and the canonical
+id. Full definitions are deliberately not searched — matching definition prose
+would return a concept for any word in any paragraph, and would mean shipping
+every definition into the index. A test asserts a phrase unique to a full
+definition returns nothing.
+
 ## Motion
 
 One `requestAnimationFrame` loop for the whole application

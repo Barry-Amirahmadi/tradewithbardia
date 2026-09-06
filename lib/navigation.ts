@@ -121,7 +121,7 @@ export const primaryNav: readonly NavNode[] = [
     id: "dictionary",
     labelKey: "dictionary",
     segment: "dictionary",
-    status: "placeholder",
+    status: "active",
     children: [
       { id: "dictionary.index", labelKey: "tradingDictionary", status: "planned" },
       { id: "dictionary.browse", labelKey: "browseTerms", status: "planned" },

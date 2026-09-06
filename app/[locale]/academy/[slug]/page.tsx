@@ -169,7 +169,14 @@ export default async function LessonPage({
         <h2 className="type-label text-accent">{academy.conceptsLabel}</h2>
         <p className="lesson-concept-row">
           {lesson.conceptIds.map((id) => (
-            <ConceptNode key={id} id={id} concepts={concepts} surface="academy" />
+            <ConceptNode
+              key={id}
+              id={id}
+              concepts={concepts}
+              locale={locale}
+              dict={dictionary.dict}
+              surface="academy"
+            />
           ))}
         </p>
       </section>
