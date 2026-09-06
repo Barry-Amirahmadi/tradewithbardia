@@ -19,10 +19,17 @@ import { onFrame } from "./frame-loop";
 export function useScrollProgress(
   ref: RefObject<HTMLElement | null>,
   onProgress: (progress: number) => void,
+  /**
+   * Set false to stop sampling entirely. Not the same as ignoring the value:
+   * a section that is not scroll-driven — a hero collapsed for reduced motion,
+   * say — should not be measuring layout every frame to feed a callback that
+   * does nothing with it.
+   */
+  enabled = true,
 ): void {
   useEffect(() => {
     const element = ref.current;
-    if (element === null) return;
+    if (element === null || !enabled) return;
 
     let last = -1;
 
@@ -41,7 +48,7 @@ export function useScrollProgress(
     });
 
     return unsubscribe;
-  }, [ref, onProgress]);
+  }, [ref, onProgress, enabled]);
 }
 
 function clamp01(value: number): number {

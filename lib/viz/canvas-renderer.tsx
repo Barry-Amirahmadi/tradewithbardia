@@ -3,7 +3,15 @@
 import { useEffect, useRef } from "react";
 
 import { onFrame } from "@/lib/motion/frame-loop";
-import { resolveSceneState, slotCount, visibleBounds } from "./scene-state";
+import { marketTokens, type MarketRole } from "./market-tokens";
+import { renderBudget, type RenderBudget } from "./render-profile";
+import {
+  normalizeProgress,
+  resolveSceneState,
+  slotCount,
+  visibleBounds,
+  type SceneState,
+} from "./scene-state";
 import type {
   Annotation,
   TradingAnimationHandle,
@@ -23,45 +31,18 @@ import type {
  * readers and search engines can reach it (§62, §63).
  */
 
-interface Palette {
-  bullish: string;
-  bearish: string;
-  grid: string;
-  axis: string;
-  neutral: string;
-  liquidity: string;
-  sweep: string;
-  structure: string;
-  imbalance: string;
-  annotation: string;
-  entry: string;
-  stop: string;
-  target: string;
-}
+/** Resolved rgb() for every role in the shared vocabulary. */
+type Palette = Record<MarketRole, string>;
 
 /**
  * Every colour the chart draws comes from the trading vocabulary in
- * globals.css (§20, §21). None of these map to a generic UI token any more:
- * the renderer used to draw liquidity and the sweep with `--accent`, the
- * structure break with `--text-primary` and the imbalance with the bearish
- * candle colour, which meant the chart's meaning lived in renderer code rather
- * than in the design system. A second chart would have re-invented it.
+ * globals.css (§19, §21), via the one shared token list. None of these map to
+ * a generic UI token: the renderer used to draw liquidity and the sweep with
+ * `--accent`, the structure break with `--text-primary` and the imbalance with
+ * the bearish candle colour, which meant the chart's meaning lived in renderer
+ * code rather than in the design system.
  */
-const TOKENS = {
-  bullish: "--market-bullish",
-  bearish: "--market-bearish",
-  grid: "--market-grid",
-  axis: "--market-axis",
-  neutral: "--market-neutral",
-  liquidity: "--market-liquidity",
-  sweep: "--market-sweep",
-  structure: "--market-structure",
-  imbalance: "--market-imbalance",
-  annotation: "--market-annotation",
-  entry: "--market-entry",
-  stop: "--market-stop",
-  target: "--market-target",
-} as const satisfies Record<keyof Palette, string>;
+const TOKENS = marketTokens;
 
 /**
  * Custom properties holding `light-dark()` do not resolve when read straight
@@ -88,7 +69,7 @@ function readPalette(host: HTMLElement): Palette {
   // compile time by `satisfies Record<keyof Palette, string>` on TOKENS: adding
   // a Palette role without its token is a type error, not a runtime hole.
   const palette = {} as Palette;
-  for (const role of Object.keys(TOKENS) as (keyof Palette)[]) {
+  for (const role of Object.keys(TOKENS) as MarketRole[]) {
     palette[role] = read(TOKENS[role]);
   }
 
@@ -109,6 +90,12 @@ interface ChartType {
   family: string;
   axisSize: number;
   tagSize: number;
+  /**
+   * The surface the plot sits on, used as a plate behind annotation labels.
+   * Deliberately not part of the trading vocabulary: it describes the chart's
+   * chrome, not a market concept, so it does not belong in `marketTokens`.
+   */
+  backdrop: string;
 }
 
 function readChartType(host: HTMLElement, compact: boolean): ChartType {
@@ -125,10 +112,14 @@ function readChartType(host: HTMLElement, compact: boolean): ChartType {
   probe.style.fontFamily = "var(--font-mono)";
   host.appendChild(probe);
   const family = getComputedStyle(probe).fontFamily || "ui-monospace, monospace";
+  // Same light-dark() resolution trick as the palette: assign, then read back.
+  probe.style.color = "var(--surface)";
+  const backdrop = getComputedStyle(probe).color;
   probe.remove();
 
   return {
     family,
+    backdrop,
     axisSize: compact
       ? px("--chart-axis-size-compact", 9)
       : px("--chart-axis-size", 10),
@@ -146,11 +137,95 @@ function withAlpha(color: string, alpha: number): string {
   return `rgb(${r} ${g} ${b} / ${alpha})`;
 }
 
+/**
+ * ATMOSPHERE — master prompt §22.
+ *
+ * The only ambient effect in the hero, and it earns its frame budget by being
+ * the argument rather than decoration: a field of unresolved ticks behind the
+ * plot that thins out as structure arrives. The page's claim is "the market is
+ * noise until you know what to look for", and this is that sentence drawn —
+ * the noise does not fade because a designer wanted a fade, it fades because
+ * the viewer has learned to read it.
+ *
+ * Positions are generated once from a fixed seed into a flat array. Nothing is
+ * allocated per frame, and the field is identical on every device and every
+ * reload, so it can be described and reasoned about rather than being a
+ * different accident each visit.
+ */
+const NOISE_SEED = 0x51ded1;
+const noiseField = buildNoiseField(320);
+
+function buildNoiseField(count: number): Float32Array {
+  // x, y, weight per point.
+  const points = new Float32Array(count * 3);
+  let a = NOISE_SEED >>> 0;
+  const rand = () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+  for (let i = 0; i < count; i += 1) {
+    points[i * 3] = rand();
+    points[i * 3 + 1] = rand();
+    points[i * 3 + 2] = 0.25 + rand() * 0.75;
+  }
+  return points;
+}
+
+/**
+ * Where the noise stands on its way out, 1 → 0.
+ *
+ * Tied to the beats rather than to raw progress so the dissolve stays aligned
+ * with the story if the timeline is re-paced: full through MARKET and NOISE,
+ * clearing across STRUCTURE, gone by the time liquidity is named.
+ */
+function noiseOpacity(state: SceneState): number {
+  switch (state.stage.id) {
+    case "market":
+      return 0.55 + 0.45 * state.stageProgress;
+    case "noise":
+      return 1;
+    case "structure":
+      return 1 - state.stageProgress;
+    default:
+      return 0;
+  }
+}
+
+function drawAtmosphere(
+  ctx: CanvasRenderingContext2D,
+  palette: Palette,
+  budget: RenderBudget,
+  state: SceneState,
+  plot: { left: number; top: number; width: number; height: number },
+): void {
+  if (!budget.atmosphere || budget.noisePoints <= 0) return;
+
+  const strength = noiseOpacity(state);
+  if (strength <= 0.01) return;
+
+  const count = Math.min(budget.noisePoints, noiseField.length / 3);
+  const size = plot.width < 520 ? 1 : 1.5;
+  ctx.fillStyle = palette.neutral;
+
+  for (let i = 0; i < count; i += 1) {
+    const px = plot.left + noiseField[i * 3]! * plot.width;
+    const py = plot.top + noiseField[i * 3 + 1]! * plot.height;
+    const weight = noiseField[i * 3 + 2]!;
+    ctx.globalAlpha = strength * weight * 0.32;
+    ctx.fillRect(px, py, size, size);
+  }
+
+  ctx.globalAlpha = 1;
+}
+
 export default function CanvasTradingAnimation({
   scene,
   progress,
   direction,
   description,
+  profile = "high",
   className,
   onReady,
 }: TradingAnimationProps) {
@@ -184,11 +259,16 @@ export default function CanvasTradingAnimation({
   // widen the range instead of snapping on every reveal.
   const cameraRef = useRef<{ min: number; max: number } | null>(null);
   const sizeRef = useRef({ width: 0, height: 0, dpr: 1 });
+  const budgetRef = useRef<RenderBudget>(renderBudget(profile));
 
   useEffect(() => {
     const handle: TradingAnimationHandle = {
       setProgress(next: number) {
-        progressRef.current = next;
+        // Normalized at the boundary. Everything downstream — the camera, the
+        // reveal, every coordinate — is arithmetic on this number, and a
+        // single NaN reaching it paints an empty canvas that looks exactly
+        // like a renderer that failed to mount.
+        progressRef.current = normalizeProgress(next);
         dirtyRef.current = true;
       },
       suspend() {
@@ -206,7 +286,7 @@ export default function CanvasTradingAnimation({
   // handle it drives the canvas through `setProgress` and this never fires
   // again — which is the point (§57).
   useEffect(() => {
-    progressRef.current = progress;
+    progressRef.current = normalizeProgress(progress);
     dirtyRef.current = true;
   }, [progress]);
 
@@ -242,9 +322,15 @@ export default function CanvasTradingAnimation({
       }
       resizeAttempts = 0;
 
-      // Cap DPR at 2. Beyond that the pixel cost climbs faster than anything
-      // becomes visible, which is exactly the trade §47 asks us to make.
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      // Budget is re-derived here rather than on mount because it depends on
+      // density as well as capability, and density changes when the box does.
+      const budget = renderBudget(profile, rect.width < 640);
+      budgetRef.current = budget;
+
+      // The ceiling comes from the budget: beyond it the pixel cost climbs
+      // faster than anything becomes visible, and on a low profile that fill
+      // rate is the difference between a smooth scrub and a stuttering one.
+      const dpr = Math.min(window.devicePixelRatio || 1, budget.maxDpr);
       canvas.width = Math.max(1, Math.round(rect.width * dpr));
       canvas.height = Math.max(1, Math.round(rect.height * dpr));
       canvas.style.width = `${rect.width}px`;
@@ -286,15 +372,19 @@ export default function CanvasTradingAnimation({
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, width, height);
 
+      const budget = budgetRef.current;
       const state = resolveSceneState(scene, progressRef.current);
       const target = visibleBounds(scene, state.revealed);
 
       // Eased toward the target rather than snapped, so the vertical camera
       // glides as new candles widen the range. Deliberate, not springy (§54).
+      // The rate is budgeted: a slower glide is more frames drawn after the
+      // scroll has already stopped, which is exactly what a low-end device
+      // cannot afford.
       const camera = cameraRef.current ?? target;
       const eased = {
-        min: camera.min + (target.min - camera.min) * 0.12,
-        max: camera.max + (target.max - camera.max) * 0.12,
+        min: camera.min + (target.min - camera.min) * budget.cameraEasing,
+        max: camera.max + (target.max - camera.max) * budget.cameraEasing,
       };
       cameraRef.current = eased;
       // Still settling? Keep drawing next frame even if progress is static.
@@ -322,7 +412,16 @@ export default function CanvasTradingAnimation({
         ((eased.max - price) / Math.max(eased.max - eased.min, 1e-6)) *
           plotHeight;
 
-      drawGrid(ctx, palette, chartType, eased, padding.left, plotWidth, width - axisWidth + 10, y);
+      // Behind everything: the unresolved market, dissolving as the beats
+      // teach the viewer what to look at.
+      drawAtmosphere(ctx, palette, budget, state, {
+        left: padding.left,
+        top: padding.top,
+        width: plotWidth,
+        height: plotHeight,
+      });
+
+      drawGrid(ctx, palette, chartType, budget, eased, padding.left, plotWidth, width - axisWidth + 10, y);
 
       // In the closing stage the candles recede and the annotations stay lit:
       // the noise fades and what is left is the structure. §20's final beat,
@@ -330,12 +429,12 @@ export default function CanvasTradingAnimation({
       const candleAlpha =
         state.stage.id === "system" ? 1 - 0.6 * state.stageProgress : 1;
 
-      drawCandles(ctx, palette, scene.candles, state.revealed, x, y, bodyWidth, candleAlpha);
+      drawCandles(ctx, palette, scene.candles, state.revealed, x, y, bodyWidth, candleAlpha, budget);
 
       for (const annotation of scene.annotations) {
         const alpha = state.opacity.get(annotation.id) ?? 0;
         if (alpha <= 0.01) continue;
-        drawAnnotation(ctx, palette, chartType, annotation, alpha, x, y, step, compact, plotWidth, padding.left);
+        drawAnnotation(ctx, palette, chartType, budget, annotation, alpha, x, y, step, compact, plotWidth, padding.left);
       }
     };
 
@@ -372,7 +471,7 @@ export default function CanvasTradingAnimation({
       themeObserver.disconnect();
       schemeQuery.removeEventListener("change", refreshPalette);
     };
-  }, [scene]);
+  }, [scene, profile]);
 
   return (
     <div
@@ -398,13 +497,14 @@ function drawGrid(
   ctx: CanvasRenderingContext2D,
   palette: Palette,
   chartType: ChartType,
+  budget: RenderBudget,
   bounds: { min: number; max: number },
   plotLeft: number,
   plotWidth: number,
   axisX: number,
   y: (price: number) => number,
 ): void {
-  const lines = chartType.axisSize <= 9 ? 4 : 6;
+  const lines = budget.gridLines;
   ctx.lineWidth = 1;
   ctx.font = `${chartType.axisSize}px ${chartType.family}`;
   ctx.textBaseline = "middle";
@@ -434,6 +534,7 @@ function drawCandles(
   y: (price: number) => number,
   bodyWidth: number,
   globalAlpha: number,
+  budget: RenderBudget,
 ): void {
   const whole = Math.floor(revealed);
   const partial = revealed - whole;
@@ -450,12 +551,14 @@ function drawCandles(
     const color = bullish ? palette.bullish : palette.bearish;
     const cx = x(i);
 
-    ctx.strokeStyle = withAlpha(color, alpha * 0.9);
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(Math.round(cx) + 0.5, y(candle.h));
-    ctx.lineTo(Math.round(cx) + 0.5, y(candle.l));
-    ctx.stroke();
+    if (budget.wicks) {
+      ctx.strokeStyle = withAlpha(color, alpha * 0.9);
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(Math.round(cx) + 0.5, y(candle.h));
+      ctx.lineTo(Math.round(cx) + 0.5, y(candle.l));
+      ctx.stroke();
+    }
 
     const top = y(Math.max(candle.o, candle.c));
     const bottom = y(Math.min(candle.o, candle.c));
@@ -468,6 +571,7 @@ function drawAnnotation(
   ctx: CanvasRenderingContext2D,
   palette: Palette,
   chartType: ChartType,
+  budget: RenderBudget,
   annotation: Annotation,
   alpha: number,
   x: (index: number) => number,
@@ -480,9 +584,24 @@ function drawAnnotation(
   const tagFont = `${chartType.tagSize}px ${chartType.family}`;
 
   const tag = (text: string, px: number, py: number, color: string, align: CanvasTextAlign = "left") => {
+    if (!budget.tags) return;
     ctx.font = tagFont;
     ctx.textAlign = align;
     ctx.textBaseline = "middle";
+
+    // A plate behind the text. The dense right-hand side of the setup puts
+    // ENTRY, STOP, TARGET and FVG directly over candle bodies, and a label
+    // that has to be deciphered against a red candle is worse than no label —
+    // it makes the chart look busy AND says nothing. Sized from the measured
+    // text so it never becomes a box floating around a short word.
+    const width = ctx.measureText(text).width;
+    const padX = 3;
+    const height = chartType.tagSize + 5;
+    const plateLeft =
+      align === "right" ? px - width - padX : align === "center" ? px - width / 2 - padX : px - padX;
+    ctx.fillStyle = withAlpha(chartType.backdrop, alpha * 0.85);
+    ctx.fillRect(plateLeft, py - height / 2, width + padX * 2, height);
+
     ctx.fillStyle = withAlpha(color, alpha);
     ctx.fillText(text, px, py);
   };

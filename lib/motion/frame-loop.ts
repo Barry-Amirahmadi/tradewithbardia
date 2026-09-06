@@ -36,3 +36,15 @@ export function prefersReducedMotion(): boolean {
   if (typeof window === "undefined") return false;
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
+
+/**
+ * The preference is live, not a one-time reading. Someone who turns motion
+ * down mid-session because a page is making them ill should not have to
+ * reload to be believed, so this is exposed as a store the hero subscribes to.
+ */
+export function subscribeReducedMotion(onChange: () => void): () => void {
+  if (typeof window === "undefined") return () => {};
+  const query = window.matchMedia("(prefers-reduced-motion: reduce)");
+  query.addEventListener("change", onChange);
+  return () => query.removeEventListener("change", onChange);
+}

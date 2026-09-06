@@ -39,10 +39,13 @@ components/
   navigation/          Navbar (5 states), MobileMenu, Theme + Locale toggles
   sections/            Hero (server) → HeroScene (client), Process, Footer
   motion/              SmoothScroll
+  charts/              TradingAnimation (façade), SceneDisclosure
 lib/
   i18n/                Locale config, dictionaries, direction
   motion/              frame-loop, useScrollProgress
   viz/                 Renderer abstraction, canvas + static renderers, scenes
+                       market-tokens (the shared chart vocabulary)
+                       render-profile (what each performance mode may draw)
   navigation.ts        The information architecture, as data
   theme.ts             Theme store + pre-paint init script
 proxy.ts               Locale resolution and redirect
@@ -96,6 +99,107 @@ the narrative holds:
 If a future edit to the segment table breaks any of those, the module throws at
 load and the build fails. A teaching diagram that shows a sweep that never
 swept is worse than no diagram.
+
+## The hero
+
+EPIC 03. Nine beats — MARKET, NOISE, STRUCTURE, LIQUIDITY, SWEEP, MSS, FVG,
+EXECUTION, SYSTEM — carrying one idea: the market looks like noise until you
+know what to look for.
+
+```
+scroll position → normalized progress → SceneState → renderer
+                                     └→ HeroBeat  → copy, rail, analytics
+```
+
+**Everything is derived from one number.** The scene keeps no history, which is
+what makes scrolling backwards, jumping in with a link, restoring a position on
+reload and resizing all the same thing to it. `normalizeProgress` is the only
+door in: it clamps out-of-range values in the direction they overshoot, and
+resolves `NaN` to the start. That last case is not defensive decoration — NaN
+survives every comparison in a naive clamp, and a canvas asked to draw at NaN
+paints nothing at all, which looks exactly like a renderer that failed to
+mount.
+
+Beat identity (`HeroBeat`) and continuous state (`SceneState`) are separate on
+purpose. Beats are semantic — they name where the viewer is for the copy, the
+rail and analytics — while everything visible interpolates. Progress 0.32 is a
+real intermediate picture, not the nearest of nine slides.
+
+The nine beats are declared twice, once as a typed union and once as the stage
+table that carries their timing, and `hero-scene.ts` asserts at load that the
+two agree. `HeroScene` then indexes the dictionary with a `HeroBeat`, so adding
+a tenth beat without copy for it in both languages is a type error rather than
+a caption that renders `undefined`.
+
+### Two modes, chosen by preference rather than by device
+
+| | Cinematic | Static |
+|---|---|---|
+| Chosen when | default | `prefers-reduced-motion: reduce` |
+| Section | 240vh mobile / 320vh desktop, pinned | its own content height |
+| Renderer | canvas | static SVG at the resolved end state |
+| Copy | three layers cross-fading | opening statement, then the closing one |
+| CTA | present | present |
+
+Reduced motion is answered in `capability.ts` *before* the renderer chain is
+consulted, because it is a stated preference and not a capability guess. It
+previously folded into the `low` profile, which still permitted canvas — so
+someone who asked their operating system for less motion received a
+scroll-scrubbed animation anyway. The static tier is not a degraded hero here:
+it is the SYSTEM composition the sequence was building toward.
+
+The section height is switched in CSS rather than from the capability store, so
+there is no tall-then-short reflow after hydration.
+
+The preference is **live**: someone who turns motion down mid-session because a
+page is making them ill should not have to reload to be believed. That makes
+the switch a real transition rather than a load-time branch, and it has one
+non-obvious consequence. The frame loop writes `opacity`, `transform` and
+`visibility` directly onto the three copy layers, and an inline style outranks
+any stylesheet rule regardless of specificity — so leaving cinematic mode
+mid-sequence would strand whichever frame was showing, typically an invisible
+opening statement, since at most one layer is lit at any position. `HeroScene`
+therefore removes exactly the properties it set when `cinematic` goes false.
+This is written out rather than left to React, which never knew about those
+writes: browser QA showed the styles being cleared anyway, but a behaviour
+nothing in our own code accounts for is not a guarantee.
+
+### Performance modes
+
+`capability.ts` decides *which renderer*; `render-profile.ts` decides *how much
+it may draw*. Until EPIC 03 only the first existed, so the profile was computed
+and then changed nothing — a four-year-old phone resolved to canvas and drew
+exactly what a desktop drew.
+
+A `RenderBudget` is data: DPR ceiling, gridline count, ambient point count,
+camera easing, whether tags and wicks are drawn. HIGH, MEDIUM and LOW differ in
+all of them, and density (a narrow box) is applied as a separate axis from
+capability (a slow device) — a fast phone should get the full treatment at a
+lower density, and a slow desktop a sparse one at full size.
+
+The rule the numbers follow: **LOW keeps the story and gives up the
+atmosphere.** Candles, structure, annotations, labels, text and CTA all
+survive; the ambient layer and the pixel ratio do not.
+
+### The atmospheric layer
+
+One effect, and it is the argument rather than decoration: a field of
+unresolved ticks behind the plot that thins out across MARKET and NOISE and is
+gone by the time liquidity is named. The noise does not fade because a fade
+looks good, it fades because the viewer has learned to read it. Positions come
+from a fixed seed into a flat typed array, so nothing is allocated per frame
+and the field is identical on every device and every reload.
+
+### Handing off to real data
+
+Nothing here needs to change when illustrative data becomes real. The scene is
+a `TradingScene`; a `RealChartAnimation`, `FrameSequenceAnimation` or
+`VideoSequenceAnimation` registers in `TradingAnimation.tsx` and the hero never
+learns about it. Provenance travels with the scene, so a real sample stops
+carrying the synthetic disclosure by changing one field rather than by someone
+remembering to delete a paragraph. A future atmospheric video layer sits behind
+the plot as an additional layer; the narrative works without it, which is the
+condition for adding it at all.
 
 ## Motion
 
@@ -233,5 +337,13 @@ the test layer, and the performance budget).
 5. **No content provider abstraction yet (§45).** Dictionaries are imported
    directly. The indirection is cheap to add and pointless before there is a
    second source.
-6. **Mobile has no separate motion timeline (§51).** Composition and asset
-   sizing differ by breakpoint; the scroll timeline is currently shared.
+6. **Mobile shares the desktop beat timeline.** Pacing, density and copy
+   anchoring differ by breakpoint — a shorter track, fewer gridlines and
+   ambient points, beat copy anchored to the chart rather than centred — but
+   the nine beats occupy the same normalized ranges in both. A genuinely
+   separate mobile timeline (§51) is still open.
+7. **The static tier is the finished frame while the copy still scrubs.** If
+   the canvas fails on a device that has not asked for reduced motion, the
+   fallback shows the resolved end state while the beat narration continues to
+   advance. §12 does not require parity and the frame is honest, but the two
+   halves are describing different moments.

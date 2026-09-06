@@ -8,20 +8,26 @@ commands are below. Automating it belongs with CI, not with Phase 0.
 
 ---
 
-## Measured baseline (2026-09-05)
+## Measured baseline (2026-09-06, EPIC 03)
 
 | Metric | Measured | Budget | Headroom |
 |---|---|---|---|
-| Initial JS, gzipped (`/fa`) | **187 KB** | **220 KB** | 33 KB |
+| Initial JS, gzipped (`/en`) | **188 KB** | **220 KB** | 32 KB |
 | Initial JS, raw | 600 KB | 700 KB | 100 KB |
-| Scripts on first load | 9 | 12 | 3 |
-| HTML document, raw | 86 KB | 110 KB | 24 KB |
+| Scripts on first load | 10 | 12 | 2 |
+| HTML document, raw | 88 KB | 110 KB | 22 KB |
+| CSS, gzipped | 10.5 KB | 25 KB | 14.5 KB |
 | Fonts, total woff2 | 131 KB (3 faces) | 140 KB | 9 KB |
 | Route chunk, per section page | < 5 KB | 40 KB | — |
-| Renderer chunk (canvas) | 5 KB | 25 KB | 20 KB |
+| Renderer chunk (canvas) | 3.4 KB | 25 KB | 21.6 KB |
+| Command palette chunk | 5 KB | 25 KB | 20 KB |
 | Smooth scroll (Lenis) | 32 KB | 40 KB | 8 KB |
 
-Most of the 185 KB is React plus the Next runtime. The application's own code
+EPIC 03 added the nine-beat hero, render budgets, the shared chart vocabulary
+and the atmospheric layer for **+0.3 KB** of initial JS. Almost all of it
+either lives in the code-split canvas chunk or is pure data.
+
+Most of the 188 KB is React plus the Next runtime. The application's own code
 is a small fraction of it, which is the intended shape: the heavy parts of this
 product are content and canvas work, not framework.
 
@@ -68,13 +74,32 @@ the frame loop entirely rather than being called and returning early.
 
 ## Canvas workload
 
-- Backing store capped at **DPR 2**. Beyond that the pixel cost climbs faster
-  than anything becomes visible.
+- Backing store capped by the **render budget**, not by a constant: DPR 2 on
+  HIGH, 1.75 on MEDIUM, **1 on LOW**. On a 2x display that is a quarter of the
+  fill rate, and fill rate is what actually separates a smooth scrub from a
+  stuttering one on a weak device.
 - Redraw is dirty-checked: no progress change and no camera easing means no
   draw, even while the loop is subscribed.
+- Camera easing is budgeted too. A slower glide is more frames drawn *after*
+  the user has stopped scrolling, so the easing factor rises as the budget
+  falls (0.12 → 0.18 → 0.30) and LOW settles in roughly a third of the frames.
+- The atmospheric field is a fixed seeded array of at most 260 points, drawn
+  as 1–1.5px rects with no per-frame allocation, and only during the first
+  three beats. It is off entirely on LOW.
 - Full-scene redraw per frame is acceptable at this scale (66 candles, ~9
   annotations). Revisit with layer caching if a scene exceeds ~500 candles.
-- Suspends when the section leaves the viewport.
+- Suspends when the section leaves the viewport **or the tab is hidden**. The
+  two are tracked separately and reconciled in one place, so returning to a
+  backgrounded tab does not restart a renderer that is three viewports away.
+
+## Hero pacing
+
+The scroll track is `240vh` on mobile and `320vh` from 48rem up. It is not one
+number because a touch scroll is a physically longer gesture than a wheel: the
+same nine beats over three viewports reads as a corridor on a phone.
+
+Under reduced motion the track collapses to its own content height in CSS, so
+the section never renders tall and then shrinks after hydration.
 
 ## Fonts
 

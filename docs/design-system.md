@@ -208,7 +208,11 @@ with the bearish candle colour — three ideas borrowing three unrelated generic
 tokens. A second chart would have invented its own mapping.
 
 Both renderers — canvas and the server-rendered SVG fallback — consume this
-same vocabulary, so they cannot drift.
+same vocabulary from one list, `lib/viz/market-tokens.ts`. They used to spell
+the properties out separately, the canvas in a lookup map and the SVG in string
+literals through its annotation switch; two copies of a vocabulary is how a
+chart ends up drawing "liquidity" in a colour that means something else
+elsewhere in the product.
 
 Entry is deliberately neutral rather than green: it is a decision, not an
 outcome, and colouring it green would imply a result the chart is not claiming.
@@ -216,6 +220,13 @@ outcome, and colouring it green would imply a result the chart is not claiming.
 These are **marks, not text**: the threshold is 3:1 (WCAG 1.4.11), not 4.5:1.
 Gridlines are decorative scaffolding and exempt. Labels drawn beside marks use
 the text tokens and are held to 4.5:1.
+
+Annotation labels sit on a plate of the chart's own surface at 85%. In the
+dense right-hand side of a setup, ENTRY, STOP, TARGET and FVG all land on
+candle bodies, and a label that has to be deciphered against a red candle makes
+the chart look busier while communicating less. Both renderers draw the plate:
+the canvas measures the text and fills behind it, the SVG fallback's HTML tag
+layer uses `color-mix`.
 
 ## Motion
 

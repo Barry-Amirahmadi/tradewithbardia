@@ -1,4 +1,28 @@
+import { resolveSceneState } from "../scene-state";
 import type { Annotation, Candle, SceneStage, TradingScene } from "../types";
+
+/**
+ * The nine beats of the hero sequence, in order — master prompt §8.
+ *
+ * Declared as a typed union rather than inferred from the stage table so that
+ * consumers can be checked against it. `HeroScene` indexes the dictionary with
+ * a `HeroBeat`, which means adding a tenth beat without copy for it in both
+ * languages is a type error rather than a caption that silently renders
+ * `undefined` on the page.
+ */
+export const heroBeats = [
+  "market",
+  "noise",
+  "structure",
+  "liquidity",
+  "sweep",
+  "mss",
+  "fvg",
+  "entry",
+  "system",
+] as const;
+
+export type HeroBeat = (typeof heroBeats)[number];
 
 /**
  * HERO SCENE — master prompt §19, §20.
@@ -356,3 +380,31 @@ function buildScene(): TradingScene {
 
 /** Built once at module load — the scene is immutable and shared. */
 export const heroScene: TradingScene = buildScene();
+
+// The stage table and the beat union describe the same nine beats. They are
+// written separately — one carries timing, the other carries type identity —
+// so this is where they are held to each other. A stage renamed on one side
+// and not the other fails at load rather than rendering an empty caption.
+{
+  const declared = heroScene.stages.map((stage) => stage.id).join(",");
+  const expected = heroBeats.join(",");
+  if (declared !== expected) {
+    throw new Error(
+      `hero-scene: stages [${declared}] do not match the declared beats [${expected}].`,
+    );
+  }
+}
+
+/**
+ * Which beat a given scroll position belongs to — master prompt §7, §32.
+ *
+ * Semantic identity only. Everything continuous — reveal, opacity, camera —
+ * interpolates through `resolveSceneState`; this exists so that text, the
+ * stage rail and analytics can name where the viewer is without any of them
+ * re-deriving the boundaries. Out-of-range and non-finite input resolve
+ * safely, because progress arrives from scroll and scroll arrives from
+ * anywhere.
+ */
+export function heroBeatAt(progress: number): HeroBeat {
+  return resolveSceneState(heroScene, progress).stage.id as HeroBeat;
+}

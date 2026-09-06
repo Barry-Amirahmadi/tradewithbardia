@@ -114,7 +114,16 @@ export function pickRenderer(
   profile: PerformanceProfile,
   available: ReadonlySet<RendererId>,
   failed: readonly RendererId[] = [],
+  reducedMotion = false,
 ): RendererId {
+  // A stated preference, not a capability guess, so it is answered before the
+  // chain is consulted at all (§58). It used to fold into the `low` profile,
+  // which still permitted canvas — meaning someone who asked the operating
+  // system for less motion received a scroll-scrubbed animation anyway. The
+  // static tier is not a degraded experience here: it is the finished SYSTEM
+  // composition, which is what the sequence was building toward (§13).
+  if (reducedMotion) return "static";
+
   for (const renderer of permitted[profile]) {
     if (available.has(renderer) && !failed.includes(renderer)) return renderer;
   }

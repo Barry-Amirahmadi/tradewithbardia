@@ -113,9 +113,21 @@ it ships.
   `components/charts/TradingAnimation.tsx` for a tier and render what comes
   back. Adding RealChart, FrameSequence, VideoSequence or WebGL is two edits in
   that one file; no section, page or scene changes.
-- Heavy rendering suspends when its section leaves the viewport.
+- Heavy rendering suspends when its section leaves the viewport **or the tab
+  is hidden**.
 - `prefers-reduced-motion` is a stated preference and outranks every capability
-  signal. It disables smooth scroll entirely and forces the low profile.
+  signal. It disables smooth scroll entirely and resolves the renderer chain
+  straight to `static` — answered before the chain is walked, not folded into
+  the `low` profile, which still permitted an animated renderer. The static
+  result is the composition the sequence was building toward, never a stub.
+- **A performance profile that changes nothing is not a profile.** `capability`
+  picks the renderer; `render-profile` decides what it may spend — pixel ratio,
+  gridlines, ambient points, camera easing. LOW gives up the atmosphere and
+  keeps the story: candles, structure, annotations, labels, text, CTA.
+- Progress enters the engine through `normalizeProgress` and nowhere else.
+  `NaN` resolves to the start; infinities clamp in the direction they overshoot.
+  A scene must be a function of its current progress, never of the sequence of
+  events that produced it.
 
 §48, §49, §50, §58, §77.5.
 

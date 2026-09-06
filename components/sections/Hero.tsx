@@ -28,7 +28,6 @@ export default function Hero({
       locale={locale}
       direction={direction}
       hero={dictionary.hero}
-      cta={dictionary.nav.cta}
       // Rendered here, on the server, and passed down. The hero does not get
       // to decide whether a disclosure appears — the scene's provenance does.
       disclosure={

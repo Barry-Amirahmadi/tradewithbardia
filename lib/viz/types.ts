@@ -166,6 +166,13 @@ export interface TradingAnimationProps {
   direction: "ltr" | "rtl";
   /** Accessible description for the figure. */
   description: string;
+  /**
+   * How much this renderer may spend. Passed as the profile rather than as a
+   * resolved budget because only the renderer knows its own density — it has
+   * measured its box, the caller has not — and because each renderer converts
+   * the same profile into different costs. Absent means the full budget.
+   */
+  profile?: PerformanceProfile;
   className?: string;
   /**
    * Handed the imperative handle once the renderer is live. A callback rather

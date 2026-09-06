@@ -22,6 +22,30 @@ function clamp01(value: number): number {
   return value < 0 ? 0 : value > 1 ? 1 : value;
 }
 
+/**
+ * The one place a progress value enters the engine.
+ *
+ * `clamp01` alone is not enough: comparisons against `NaN` are all false, so a
+ * NaN slips through both branches and then poisons every derived number —
+ * `revealed`, the camera bounds, every `x()` and `y()` — and a canvas asked to
+ * draw at NaN silently paints nothing. That failure looks exactly like a
+ * renderer that never mounted, which is the most expensive kind of bug to
+ * chase. A non-finite reading is not a position, so it resolves to the start.
+ *
+ * The scene is a pure function of this number (§30): jumping, reversing,
+ * resizing or restoring a scroll position all arrive here as a value, never
+ * as a sequence of events the scene has to have witnessed.
+ */
+export function normalizeProgress(value: number): number {
+  // NaN specifically, rather than "not finite": ±Infinity is a direction, and
+  // clamping it the same way `1e9` is clamped keeps the function monotonic.
+  // Rejecting it instead would mean a very large number resolved to the end
+  // and an infinite one to the start, which is the kind of inconsistency that
+  // makes a boundary bug impossible to reason about.
+  if (Number.isNaN(value)) return 0;
+  return clamp01(value);
+}
+
 function easeOut(t: number): number {
   return 1 - Math.pow(1 - t, 3);
 }
@@ -30,7 +54,7 @@ export function resolveSceneState(
   scene: TradingScene,
   progress: number,
 ): SceneState {
-  const p = clamp01(progress);
+  const p = normalizeProgress(progress);
 
   let index = scene.stages.length - 1;
   for (let i = 0; i < scene.stages.length; i += 1) {

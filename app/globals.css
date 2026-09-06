@@ -312,6 +312,15 @@
   --nav-h-initial: 5.5rem;
   --nav-h-scrolled: 3.75rem;
 
+  /* --- Hero pacing — §17 --------------------------------------------------
+     Scroll distance the nine beats are spread across. Enough that each beat
+     lands rather than flickering past, short enough that the visitor is not
+     scrolling through an empty corridor. A phone gets less: the same nine
+     beats, but a touch scroll is a physically longer gesture than a wheel and
+     three viewports of it reads as being trapped. Tuned by measurement, not
+     by preference — see docs/performance.md. */
+  --hero-track: 240vh;
+
   /* --- Density — §27 ------------------------------------------------------
      Breakpoints are named for available space, not for devices. A component
      asks "how much room do I have", never "am I on a phone". */
@@ -1580,6 +1589,185 @@
     }
   }
 
+  /* --- HERO — EPIC 03 §5, §13, §15, §17, §29 ---------------------------- */
+
+  .hero-track {
+    position: relative;
+    block-size: var(--hero-track);
+  }
+
+  /* A wheel covers ground far faster than a thumb, so the desktop track can
+     afford to be longer without the sequence feeling slow. */
+  @media (width >= 48rem) {
+    .hero-track {
+      --hero-track: 320vh;
+    }
+  }
+
+  /* --- Hero copy layers ---------------------------------------------------
+     Three pieces of copy occupying one box: the opening statement, the beat
+     narration that replaces it, and the closing statement. Their opacity and
+     transform are written imperatively from the frame loop, so the values
+     here are the resting state before the first frame — never the animation
+     itself. Inline styles win over these, which is exactly the handover
+     wanted: CSS holds the layers until the scroll engine takes them. */
+
+  .hero-copy {
+    position: relative;
+    min-block-size: 17rem;
+  }
+
+  @media (width >= 64rem) {
+    .hero-copy {
+      min-block-size: 19rem;
+    }
+  }
+
+  .hero-copy-intro {
+    will-change: opacity, transform;
+  }
+
+  .hero-copy-narration,
+  .hero-copy-outro {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    will-change: opacity, transform;
+  }
+
+  /* Stacked composition: the copy sits above the chart rather than beside it,
+     so the beat text is anchored to the bottom of its reserved box — right
+     next to the chart it is describing. Centred, it floated in the middle of
+     the space the opening statement needs, which reads as a gap rather than
+     as breathing room. */
+  @media (width < 64rem) {
+    .hero-copy-narration,
+    .hero-copy-outro {
+      justify-content: flex-end;
+      padding-block-end: var(--space-2);
+    }
+  }
+
+  /* Reduced motion: the layers stop sharing a box and fall into normal flow.
+     The narration goes — it only exists to fill the gap between the opening
+     and closing statements while scrolling, and there is no scrolling here —
+     and the closing statement becomes a paragraph under the opening one. */
+  .hero-copy[data-mode="static"] {
+    min-block-size: 0;
+  }
+
+  .hero-copy[data-mode="static"] .hero-copy-narration {
+    display: none;
+  }
+
+  .hero-copy[data-mode="static"] .hero-copy-outro {
+    position: static;
+    opacity: 1;
+    visibility: visible;
+    margin-block-start: var(--space-8);
+    padding-block-start: var(--space-8);
+    border-block-start: 1px solid var(--border-subtle);
+  }
+
+  .hero-stage {
+    position: sticky;
+    inset-block-start: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    block-size: 100svh;
+    overflow: hidden;
+  }
+
+  /* Hands off to the section below instead of stopping dead (§29). The hero
+     ends by dissolving into the page rather than at a hard edge, so "the
+     market is structured" and "here is the system" read as one movement. */
+  .hero-stage::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    inset-block-end: 0;
+    block-size: var(--space-16);
+    pointer-events: none;
+    background: linear-gradient(to bottom, transparent, var(--canvas));
+  }
+
+  .hero-hint {
+    position: absolute;
+    inset-block-end: var(--space-6);
+    inset-inline-start: 50%;
+    transform: translateX(-50%);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: var(--text-muted);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .hero-hint-arrow {
+    animation: hero-hint var(--dur-scene) var(--ease-out) infinite;
+  }
+
+  @keyframes hero-hint {
+    0%, 100% { transform: translateY(0); opacity: 0.55; }
+    50% { transform: translateY(4px); opacity: 1; }
+  }
+
+  /* --- CHART OVERLAY — EPIC 03 §12 --------------------------------------
+     The undistorted half of the static renderer. The SVG beneath is stretched
+     to fill its box, which is correct for candles and price lines and wrong
+     for anything whose shape or legibility carries the meaning. */
+
+  .chart-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    font-family: var(--font-mono);
+  }
+
+  .chart-tag {
+    position: absolute;
+    font-size: var(--chart-tag-size);
+    line-height: 1;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+    transform: translateY(-50%);
+    /* A plate, matching the canvas renderer. Labels in the dense part of the
+       setup land on candle bodies, and a tag that has to be deciphered
+       against a red candle makes the chart look busy while saying nothing. */
+    padding: 2px 3px;
+    border-radius: var(--radius-sm);
+    background-color: color-mix(in srgb, var(--surface) 85%, transparent);
+  }
+
+  .chart-mark {
+    position: absolute;
+    border-radius: var(--radius-pill);
+    transform: translate(-50%, -50%);
+  }
+
+  .chart-mark-sweep {
+    inline-size: 14px;
+    block-size: 14px;
+    border: 1.5px solid currentColor;
+  }
+
+  .chart-mark-swing {
+    inline-size: 5px;
+    block-size: 5px;
+    background-color: currentColor;
+  }
+
+  @media (width < 40rem) {
+    .chart-tag { font-size: var(--chart-tag-size-compact); }
+    .chart-mark-sweep { inline-size: 11px; block-size: 11px; }
+  }
+
 }
 
 /* --- UTILITIES ----------------------------------------------------------- */
@@ -1641,10 +1829,11 @@
   }
 }
 
-/* --- REDUCED MOTION — §58 ------------------------------------------------ */
-/* Content is never removed, only the motion around it. Scroll-driven scenes
-   read `prefers-reduced-motion` in JS and jump to their resolved end state
-   rather than animating (see lib/motion/reduced-motion.ts). */
+/* --- REDUCED MOTION — §58, EPIC 03 §13 ----------------------------------- */
+/* Content is never removed, only the motion around it. `lib/viz/capability.ts`
+   answers the preference before the renderer chain is consulted, so a
+   scroll-scrubbed scene resolves to the static tier — the finished SYSTEM
+   composition — instead of playing at a lower frame budget. */
 
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -1654,5 +1843,26 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+
+  /* The hero stops being a scroll track. Three viewports of pinned scrolling
+     with nothing moving inside them is not a reduced experience, it is an
+     empty corridor — so the section collapses to its own content height and
+     shows the resolved composition in place. Done in CSS rather than from the
+     capability store so there is no tall-then-short reflow after hydration. */
+  .hero-track {
+    block-size: auto;
+  }
+
+  .hero-stage {
+    position: static;
+    block-size: auto;
+    overflow: visible;
+    padding-block: var(--space-24);
+  }
+
+  .hero-stage::after,
+  .hero-hint {
+    display: none;
   }
 }

@@ -10,49 +10,65 @@ import {
   type ReactNode,
 } from "react";
 
-import type { Locale } from "@/lib/i18n/config";
-import type { Dictionary } from "@/lib/i18n/dictionary-type";
-import { useScrollProgress } from "@/lib/motion/use-scroll-progress";
 import TradingAnimation, {
   availableRenderers,
   hasClientRenderer,
 } from "@/components/charts/TradingAnimation";
+import type { Locale } from "@/lib/i18n/config";
+import type { Dictionary } from "@/lib/i18n/dictionary-type";
+import {
+  prefersReducedMotion,
+  subscribeReducedMotion,
+} from "@/lib/motion/frame-loop";
+import { useScrollProgress } from "@/lib/motion/use-scroll-progress";
 import { currentProfile, pickRenderer } from "@/lib/viz/capability";
 import { resolveSceneState } from "@/lib/viz/scene-state";
-import { heroScene } from "@/lib/viz/scenes/hero-scene";
-import type { RendererId, TradingAnimationHandle } from "@/lib/viz/types";
-
-const stageOrder = heroScene.stages.map((stage) => stage.id);
+import {
+  heroBeats,
+  heroScene,
+  type HeroBeat,
+} from "@/lib/viz/scenes/hero-scene";
+import type {
+  PerformanceProfile,
+  RendererId,
+  TradingAnimationHandle,
+} from "@/lib/viz/types";
 
 /**
- * This component names no renderer. It asks the registry which implementation
- * won for this device and renders whatever comes back, so adding a real-chart,
- * frame-sequence, video or WebGL renderer never touches this file — §21, §50.
+ * THE CINEMATIC HERO — master prompt §5–§9, §13–§18, §29, §30.
  *
- * Cached at module scope because `useSyncExternalStore` requires a snapshot
- * that is stable across calls.
+ * Nine beats, one scroll track, one continuous idea: the market looks like
+ * noise until you know what to look for. Everything on screen is a function of
+ * a single normalized number, so the scene has no history to get wrong —
+ * scrolling backwards, jumping with a link, restoring a position on reload and
+ * resizing all arrive here as a value rather than as a sequence of events the
+ * animation had to witness (§30).
+ *
+ * This component names no renderer. It asks capability for a tier and renders
+ * whatever comes back, so adding a real-chart, frame-sequence, video or WebGL
+ * renderer never touches this file — §10, §21, §50.
+ *
+ * Two modes, and the difference is a stated preference rather than a device
+ * guess. CINEMATIC scrubs the sequence. STATIC — for anyone who asked for
+ * reduced motion — presents the composition the sequence was building toward,
+ * in a section that is no taller than its own content. Neither is a degraded
+ * version of the other and neither drops the CTA (§13).
  */
-let cachedPreferred: RendererId | null = null;
-
-function preferredRenderer(): RendererId {
-  cachedPreferred ??= pickRenderer(currentProfile(), availableRenderers);
-  return cachedPreferred;
-}
 
 /** Capability cannot change mid-session; there is nothing to subscribe to. */
-const subscribeCapability = () => () => {};
+const noSubscription = () => () => {};
+/** The server cannot know the device, so it assumes the full experience and
+ *  lets the client correct it — the same direction as every other upgrade. */
+const serverProfile = (): PerformanceProfile => "high";
+const serverReducedMotion = () => false;
 
-/** The server cannot know the device, so it always renders the static tier. */
-const serverPreferredRenderer = (): RendererId => "static";
-
-type StageKey = keyof Dictionary["hero"]["stages"];
+const LAST_BEAT = heroBeats.length - 1;
 
 interface Props {
   locale: Locale;
   direction: "ltr" | "rtl";
   hero: Dictionary["hero"];
-  cta: string;
-  /** Server-rendered provenance disclosure for the scene (§26). */
+  /** Server-rendered provenance disclosure for the scene (§20, §26). */
   disclosure: ReactNode;
   /** Server-rendered static fallback. */
   children: ReactNode;
@@ -66,7 +82,6 @@ export default function HeroScene({
   locale,
   direction,
   hero,
-  cta,
   disclosure,
   children,
 }: Props) {
@@ -74,28 +89,38 @@ export default function HeroScene({
   const introRef = useRef<HTMLDivElement>(null);
   const narrationRef = useRef<HTMLDivElement>(null);
   const outroRef = useRef<HTMLDivElement>(null);
+  const hintRef = useRef<HTMLDivElement>(null);
   const handleRef = useRef<TradingAnimationHandle | null>(null);
 
-  // Capability is resolved from the device, never guessed on the server —
-  // guessing wrong ships a canvas-tier experience to a phone that cannot
-  // afford it (§48). Modelled as an external store so the client value arrives
-  // without a setState-in-effect cascade.
-  const preferred = useSyncExternalStore(
-    subscribeCapability,
-    preferredRenderer,
-    serverPreferredRenderer,
+  // Both read as external stores rather than as setState-on-mount effects, so
+  // the client value arrives without a render cascade. Reduced motion is live:
+  // someone who turns motion down mid-session because a page is making them
+  // ill should not have to reload to be believed.
+  const reducedMotion = useSyncExternalStore(
+    subscribeReducedMotion,
+    prefersReducedMotion,
+    serverReducedMotion,
   );
+  const profile = useSyncExternalStore(
+    noSubscription,
+    currentProfile,
+    serverProfile,
+  );
+  const cinematic = !reducedMotion;
 
   // Renderers that were selected but never initialised this session. Recorded
   // so the chain can be walked past them rather than collapsing to static.
   const [failed, setFailed] = useState<readonly RendererId[]>([]);
   const [ready, setReady] = useState(false);
-  const [stageId, setStageId] = useState<string>(stageOrder[0] ?? "market");
-  const stageIdRef = useRef(stageId);
+  const [beat, setBeat] = useState<HeroBeat>(heroBeats[0]);
+  const beatRef = useRef<HeroBeat>(beat);
 
-  const rendererId = failed.includes(preferred)
-    ? pickRenderer(currentProfile(), availableRenderers, failed)
-    : preferred;
+  const rendererId = pickRenderer(
+    profile,
+    availableRenderers,
+    failed,
+    reducedMotion,
+  );
   const clientRendered = hasClientRenderer(rendererId);
 
   const handleReady = useCallback((handle: TradingAnimationHandle) => {
@@ -123,8 +148,8 @@ export default function HeroScene({
     handleRef.current?.setProgress(progress);
 
     // Opening copy clears out of the way; the closing statement arrives as the
-    // chart resolves into the brand — §20's first and last beats. Written
-    // straight to style, so neither costs a React render.
+    // chart resolves into the brand — §8's first and last beats. Written
+    // straight to style, so none of this costs a React render (§7, §11).
     const intro = introRef.current;
     if (intro !== null) {
       const out = clamp01((progress - 0.05) / 0.17);
@@ -134,9 +159,9 @@ export default function HeroScene({
     }
 
     // Between the intro leaving and the outro arriving, the copy column would
-    // otherwise sit empty for two thirds of the scroll. The stage narration
+    // otherwise sit empty for two thirds of the scroll. The beat narration
     // fills it, so text and chart move together instead of the chart carrying
-    // the whole scene alone (§19 — one continuous scene).
+    // the whole scene alone (§18 — reinforce the visual, do not narrate it).
     const narration = narrationRef.current;
     if (narration !== null) {
       const inn = clamp01((progress - 0.2) / 0.06);
@@ -155,59 +180,138 @@ export default function HeroScene({
       outro.style.visibility = inn <= 0 ? "hidden" : "visible";
     }
 
+    // The hint has done its job the moment the visitor scrolls at all.
+    const hint = hintRef.current;
+    if (hint !== null) {
+      const gone = clamp01(progress / 0.04);
+      hint.style.opacity = String(1 - gone);
+      hint.style.visibility = gone >= 1 ? "hidden" : "visible";
+    }
+
     const { stage } = resolveSceneState(heroScene, progress);
-    if (stage.id !== stageIdRef.current) {
-      stageIdRef.current = stage.id;
-      setStageId(stage.id);
+    const next = stage.id as HeroBeat;
+    if (next !== beatRef.current) {
+      beatRef.current = next;
+      setBeat(next);
     }
   }, []);
 
-  useScrollProgress(sectionRef, onProgress);
+  useScrollProgress(sectionRef, onProgress, cinematic);
 
-  // Stop rendering entirely once the scene is off screen (§49). A canvas that
-  // keeps painting behind three viewports of content is pure battery cost.
+  /**
+   * Leaving cinematic mode hands the copy layers back to CSS.
+   *
+   * The frame loop writes opacity, transform and visibility straight onto
+   * these nodes, and an inline style outranks any stylesheet rule regardless
+   * of specificity. So a visitor who turns reduced motion on halfway through
+   * the sequence would be left with whichever frame happened to be showing —
+   * usually an invisible opening statement and an invisible closing one,
+   * because at most one of the three layers is lit at any position.
+   *
+   * Removing exactly the properties this component set is what makes the
+   * static composition a guarantee rather than a coincidence. It is written
+   * out explicitly because the alternative is depending on a framework
+   * detail to clean up after imperative writes it never knew about.
+   */
+  useEffect(() => {
+    if (cinematic) return;
+    for (const layer of [introRef, narrationRef, outroRef]) {
+      const element = layer.current;
+      if (element === null) continue;
+      element.style.removeProperty("opacity");
+      element.style.removeProperty("transform");
+      element.style.removeProperty("visibility");
+    }
+  }, [cinematic]);
+
+  /**
+   * Turning reduced motion ON mid-session stops the frame loop without it
+   * getting a final call, so whatever opacity and transform it wrote last
+   * would stick — and if it stopped between beats, the copy is left invisible
+   * with no way back. Inline styles outrank the stylesheet, so the layers have
+   * to be handed back to CSS explicitly.
+   */
+  useEffect(() => {
+    if (cinematic) return;
+    for (const ref of [introRef, narrationRef, outroRef]) {
+      const element = ref.current;
+      if (element === null) continue;
+      element.style.opacity = "";
+      element.style.transform = "";
+      element.style.visibility = "";
+    }
+  }, [cinematic]);
+
+  /**
+   * The renderer draws only when the scene is both on screen and on a page the
+   * user is actually looking at (§11, §31). Two independent conditions, so
+   * they are tracked separately and reconciled in one place — resuming on tab
+   * focus while the hero is three viewports up would otherwise restart a loop
+   * that should stay stopped.
+   */
   useEffect(() => {
     const section = sectionRef.current;
     if (section === null) return;
+
+    let onScreen = true;
+    let pageVisible = !document.hidden;
+
+    const sync = () => {
+      if (onScreen && pageVisible) handleRef.current?.resume();
+      else handleRef.current?.suspend();
+    };
 
     const observer = new IntersectionObserver(
       (entries) => {
         const entry = entries[0];
         if (entry === undefined) return;
-        if (entry.isIntersecting) handleRef.current?.resume();
-        else handleRef.current?.suspend();
+        onScreen = entry.isIntersecting;
+        sync();
       },
       { rootMargin: "10% 0px" },
     );
-
     observer.observe(section);
-    return () => observer.disconnect();
+
+    const onVisibility = () => {
+      pageVisible = !document.hidden;
+      sync();
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+
+    return () => {
+      observer.disconnect();
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
   }, []);
 
-  const stage = hero.stages[stageId as StageKey] ?? hero.stages.market;
+  const copy = hero.stages[beat];
+  const railIndex = cinematic ? heroBeats.indexOf(beat) : LAST_BEAT;
 
   return (
-    <div ref={sectionRef} className="relative h-[320vh]">
-      <div className="sticky top-0 flex h-[100svh] flex-col justify-center overflow-hidden">
+    <div
+      ref={sectionRef}
+      className="hero-track"
+      data-beat={cinematic ? beat : "system"}
+      data-mode={cinematic ? "cinematic" : "static"}
+    >
+      <div className="hero-stage">
         <div className="container-page grid w-full gap-8 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:items-center lg:gap-16">
-          {/* Copy column. On mobile this sits above the chart and the grid
-              collapses; §51 asks for a different composition, not a squeeze. */}
-          {/* The three copy layers stack absolutely, so this box has to be tall
-              enough for the tallest of them. Sized too tightly it clips the
-              outro on a phone and only its button survives. */}
-          <div className="relative min-h-[17rem] lg:min-h-[19rem]">
-            <div ref={introRef} className="will-change-[opacity,transform]">
+          {/* Copy column. On mobile it sits above the chart and the grid
+              collapses — §15 asks for a different composition, not a squeeze.
+              In cinematic mode the three layers stack in the same box and
+              cross-fade; in static mode they fall into normal flow, which is
+              why the height floor is conditional rather than baked in. */}
+          <div className="hero-copy" data-mode={cinematic ? "cinematic" : "static"}>
+            <div ref={introRef} className="hero-copy-intro">
               <p className="type-label">{hero.eyebrow}</p>
               <h1 className="mt-4 type-h1">
                 {hero.titleLine1}
                 <span className="block text-secondary">{hero.titleLine2}</span>
               </h1>
-              <p className="mt-6 max-w-[38ch] type-lead">
-                {hero.lead}
-              </p>
+              <p className="mt-6 max-w-[38ch] type-lead">{hero.lead}</p>
               <div className="mt-8 flex flex-wrap items-center gap-3">
                 <Link href={`/${locale}/learn`} className="btn btn-primary">
-                  {cta}
+                  {hero.ctaPrimary}
                 </Link>
                 <Link href={`/${locale}/systems`} className="btn btn-ghost">
                   {hero.ctaSecondary}
@@ -215,42 +319,39 @@ export default function HeroScene({
               </div>
             </div>
 
-            {/* Stage narration. `key` on the inner block restarts the fade on
-                every beat, so a stage change reads as a cut rather than a
+            {/* Beat narration. `key` on the inner block restarts the fade on
+                every beat, so a beat change reads as a cut rather than a
                 silent text swap. */}
-            <div
-              ref={narrationRef}
-              className="absolute inset-0 flex flex-col justify-center"
-              style={{ opacity: 0, visibility: "hidden" }}
-              aria-live="polite"
-            >
-              <div key={stageId} className="animate-[menu-reveal_var(--dur-slow)_var(--ease-precision)]">
-                <p className="type-label text-accent">{stage.label}</p>
-                <p className="mt-4 max-w-[22ch] type-h2">
-                  {stage.caption}
-                </p>
+            <div ref={narrationRef} className="hero-copy-narration" aria-live="polite">
+              <div
+                key={beat}
+                className="animate-[menu-reveal_var(--dur-slow)_var(--ease-precision)]"
+              >
+                <p className="type-label text-accent">{copy.label}</p>
+                <p className="mt-4 max-w-[22ch] type-h2">{copy.caption}</p>
               </div>
             </div>
 
-            <div
-              ref={outroRef}
-              className="absolute inset-0 flex flex-col justify-center"
-              style={{ opacity: 0, visibility: "hidden" }}
-            >
+            <div ref={outroRef} className="hero-copy-outro">
               <p className="type-label">{hero.stages.system.label}</p>
               <p className="mt-4 max-w-[26ch] type-h2">
                 {hero.stages.system.caption}
               </p>
-              <div className="mt-8">
-                <Link href={`/${locale}/setups`} className="btn btn-primary">
-                  {hero.ctaSecondary}
-                </Link>
-              </div>
+              {/* Only in cinematic mode: in static mode the intro's own CTA is
+                  a few centimetres above this, and two identical buttons is
+                  not emphasis, it is noise. */}
+              {cinematic ? (
+                <div className="mt-8">
+                  <Link href={`/${locale}/learn`} className="btn btn-primary">
+                    {hero.ctaPrimary}
+                  </Link>
+                </div>
+              ) : null}
             </div>
           </div>
 
           {/* Chart column. */}
-          <figure className="m-0">
+          <figure className="m-0" aria-label={hero.sceneLabel}>
             <div className="relative h-[42svh] w-full rounded-[var(--radius-lg)] border border-subtle bg-surface lg:h-[60svh]">
               <TradingAnimation
                 renderer={rendererId}
@@ -258,6 +359,7 @@ export default function HeroScene({
                 progress={0}
                 direction={direction}
                 description={hero.sceneDescription}
+                profile={profile}
                 onReady={handleReady}
                 className="absolute inset-0"
               />
@@ -277,16 +379,23 @@ export default function HeroScene({
             </div>
 
             <figcaption className="mt-4 flex flex-col gap-3">
-              {/* Stage rail — where you are in the sequence, and how much is
-                  left. Nine ticks, no labels: it orients without competing. */}
-              <ol className="flex list-none gap-1.5 p-0" aria-hidden="true">
-                {stageOrder.map((id) => (
+              {/* Beat rail — where you are in the sequence, and how much is
+                  left. Nine ticks, no labels: it orients without competing.
+
+                  `dir="ltr"` for the same reason the chart's own overlay is:
+                  it sits directly under the plot and spans its width, so a
+                  reader takes it as that plot's progress. Time in the chart
+                  runs left to right in both locales — the documented §17
+                  exception — and a rail filling the other way underneath it
+                  contradicts the thing it is annotating. */}
+              <ol className="flex list-none gap-1.5 p-0" dir="ltr" aria-hidden="true">
+                {heroBeats.map((id, index) => (
                   <li
                     key={id}
                     className="h-px flex-1 transition-colors duration-[var(--dur-base)]"
                     style={{
                       backgroundColor:
-                        stageOrder.indexOf(id) <= stageOrder.indexOf(stageId)
+                        index <= railIndex
                           ? "var(--accent)"
                           : "var(--border-subtle)",
                     }}
@@ -298,6 +407,15 @@ export default function HeroScene({
             </figcaption>
           </figure>
         </div>
+
+        {cinematic ? (
+          <div ref={hintRef} className="hero-hint type-label">
+            <span>{hero.scrollHint}</span>
+            <span className="hero-hint-arrow" aria-hidden="true">
+              ↓
+            </span>
+          </div>
+        ) : null}
       </div>
     </div>
   );
