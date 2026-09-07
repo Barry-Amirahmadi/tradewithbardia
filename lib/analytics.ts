@@ -43,7 +43,12 @@ export type AnalyticsEvent =
   // Dictionary (EPIC 07). Ids are canonical concept ids.
   | "dictionary_view"
   | "dictionary_search"
-  | "dictionary_term_open";
+  | "dictionary_term_open"
+  // JournalwithBardia (EPIC 08). Ids are view names and trade ids. Trade ids
+  // are local demo identifiers and never leave the browser.
+  | "journal_app_view"
+  | "journal_trade_open"
+  | "journal_review_save";
 
 /**
  * Payloads carry identifiers and UI state only. No free text from a user, no

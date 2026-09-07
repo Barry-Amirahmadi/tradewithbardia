@@ -8,7 +8,7 @@ commands are below. Automating it belongs with CI, not with Phase 0.
 
 ---
 
-## Measured baseline (2026-09-06, EPIC 07)
+## Measured baseline (2026-09-06, EPIC 08)
 
 **Transfer and parse are separate budgets.** Until EPIC 05 this file stated one
 raw-byte ceiling for the document, and the EPIC 04 review showed that was
@@ -30,6 +30,8 @@ false alarm.
 | `/en/academy/[slug]` lesson | 84 kB | 110 kB | 20.4 kB | 30 kB |
 | `/en/dictionary` landing | 39 kB | 90 kB | 9.1 kB | 25 kB |
 | `/en/dictionary/[slug]` term | 30 kB | 90 kB | 6.2 kB | 25 kB |
+| `/en/journal` public | 45 kB | 90 kB | 10.8 kB | 25 kB |
+| `/en/app/*` shell | 44–48 kB | 90 kB | 12.7–13.0 kB | 25 kB |
 | `/en/about` placeholder | 19 kB | 40 kB | 4.7 kB | 15 kB |
 
 The home page fell from 109 kB to 86 kB in this epic because the Trading System
@@ -50,7 +52,7 @@ document was the headroom fix the EPIC 04 review recommended.
 
 | Constraint | Rule | Measured |
 |---|---|---|
-| Active renderer instances per page | **≤ 1** | setup detail 1; library, academy and **dictionary 0** |
+| Active renderer instances per page | **≤ 1** | setup detail 1; library, academy, dictionary and **journal 0** |
 | SSR'd full-fidelity chart fallbacks | **≤ 1 per document** | home 1 (hero), everywhere else 0 |
 | Card preview payload | ≤ 1 kB per card | ~340 B glyph |
 | Setup dataset in a shared client component | **forbidden** | route-scoped |

@@ -514,6 +514,80 @@ would return a concept for any word in any paragraph, and would mean shipping
 every definition into the index. A test asserts a phrase unique to a full
 definition returns nothing.
 
+## JournalwithBardia
+
+EPIC 08. The trading intelligence layer, and the fifth consumer of the EPIC 04
+concept model.
+
+### The public/private boundary
+
+**The decision this epic turned on.** The site is statically exported with
+`dynamicParams = false`. Server-authenticated `/app/*` routes would need a
+backend and real authentication, both out of scope — so the application is
+**client-only**, and three properties follow:
+
+| | |
+|---|---|
+| `/[locale]/journal` | Public, static, indexable. The product argument and a demo. |
+| `/[locale]/app/[[...view]]` | One catch-all, statically generated per view, `noindex, nofollow`, rendering **no records at all**. |
+| A single trade | Addressed by URL **fragment**, never a path segment. |
+
+The privacy boundary is therefore structural rather than procedural: the
+prerendered HTML has nothing in it to leak, no RSC payload carries records, and
+a fragment is never sent to a server, never logged, and needs no route per
+record. Verified against the build output — `/en/app/*`, `/en/about` and the
+home page contain no trade ids, prices or risk amounts.
+
+There is no authentication and the UI says so. No session, no "signed in as",
+no client-side identity pretending to be authorization.
+
+### Domain model
+
+`Trade` references canonical identities and copies nothing: `conceptIds` are
+`TradingConceptId`, `setupId` is a Setup slug. There is no `JournalConcept` and
+no `JournalSetup`. Validation rejects a dangling reference on write.
+
+**No derived value is stored.** There is no P&L field, no R multiple, no
+win/loss flag — those are computed from entry, stop and exit. Storing a figure
+alongside its inputs is how a ledger starts disagreeing with itself.
+
+`origin: "demo" | "user"` lives on the record itself, because a label kept
+anywhere else can be lost when records move between views.
+
+### Financial precision
+
+Money is integer minor units; prices are scaled integers at 1e5. Ratios are
+integer basis points, so R multiples and rates can still be summed and averaged
+exactly. Division happens once, at the end, with `roundHalfAway` — chosen over
+`Math.round` because the platform default is half-*up*, which is asymmetric
+across zero and quietly biases losses on a ledger.
+
+### Calculation and analytics
+
+`calculations.ts` is pure per-trade arithmetic; `analytics.ts` aggregates. No
+component contains a formula, and a test asserts that changing the demo records
+changes the dashboard.
+
+**Absence is not zero.** Every function returns `null` where the inputs do not
+support an answer, and `null` renders as INSUFFICIENT DATA. Win rate and
+expectancy are additionally withheld below five closed trades — a rate from
+four trades is an anecdote with a percent sign. This is PROJECT_RULES §1
+applied to the Journal exactly as the Setup Lab applies it.
+
+This is also the §19 boundary for a future AI analyst: **this layer calculates,
+the analyst explains.** A model must never produce a primary financial metric.
+
+### Storage
+
+`TradeRepository` is one async interface with a memory implementation and a
+browser-local one. No component imports `localStorage`; a test enforces that.
+A server-backed implementation is a new class and a different construction
+call, not a UI rewrite — which is the whole point of the abstraction.
+
+Reads are defensive: `localStorage` throws in private mode, can be disabled,
+and can hold anything a previous version wrote. Malformed rows are dropped
+using the same pure validation the domain uses.
+
 ## Motion
 
 One `requestAnimationFrame` loop for the whole application

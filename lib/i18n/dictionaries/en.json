@@ -592,6 +592,169 @@
       "review": "Review"
     }
   },
+  "journal": {
+    "eyebrow": "JournalwithBardia",
+    "title": "A journal is not valuable because it stores trades",
+    "lead": "It is valuable because it turns trades into evidence. Record the decision, review it against the system, classify what happened, and let the records describe the process instead of your memory of it.",
+    "loopLabel": "How it works",
+    "openApp": "Open the demo application",
+    "openAppNote": "Runs entirely in your browser. No account, nothing uploaded.",
+    "demoLabel": "Demo data",
+    "demoNote": "Every figure below is calculated from the demo records, not typed in. These are illustrative trades, not a performance record.",
+    "insufficient": "Insufficient data",
+    "stages": {
+      "record": {
+        "label": "Record",
+        "body": "Entry, stop, target and the risk taken — written before the outcome is known, so the record cannot be edited by hindsight."
+      },
+      "review": {
+        "label": "Review",
+        "body": "Was the process followed? That question is answered separately from whether the trade profited, because they are independent facts."
+      },
+      "classify": {
+        "label": "Classify",
+        "body": "Tag what actually mattered using the same concepts the rest of the product uses. A mistake becomes structured data, not a sentence in a note."
+      },
+      "measure": {
+        "label": "Measure",
+        "body": "Metrics are derived from the records by one calculation engine. Nothing is entered by hand, and nothing appears before the sample supports it."
+      },
+      "discover": {
+        "label": "Discover",
+        "body": "Patterns emerge from the classifications: which setups you actually trade, which rules you break, which concepts show up when things go wrong."
+      },
+      "refine": {
+        "label": "Refine",
+        "body": "Change the system because the records say so. That is the only honest reason to change it, and it closes the loop back to the market."
+      }
+    },
+    "whyTitle": "Why a normal journal is not enough",
+    "whyBody": "Most journals store a screenshot and a paragraph. That is a diary. It records that something happened without making it comparable to anything else, so after two hundred entries you have two hundred anecdotes and no answer to a single question about your own process.",
+    "whyPoints": [
+      "A trade tagged with the same concepts the Academy teaches can be counted, compared and questioned.",
+      "Rule adherence recorded separately from profit is the only way to tell a good losing trade from a lucky winning one.",
+      "Metrics computed from records — never entered — cannot drift away from what actually happened."
+    ],
+    "app": {
+      "title": "Journal",
+      "demoBanner": "Demo data · stored in this browser only, never uploaded",
+      "nav": {
+        "dashboard": "Dashboard",
+        "trades": "Trades",
+        "review": "Review",
+        "analytics": "Analytics"
+      },
+      "notSignedIn": "No account. This is a local demo of the application shell.",
+      "reset": "Reset demo data",
+      "empty": "No trades yet.",
+      "backToJournal": "About JournalwithBardia",
+      "dashboard": {
+        "title": "Dashboard",
+        "performance": "Performance",
+        "processTitle": "Process",
+        "recent": "Recent trades",
+        "queue": "Awaiting review",
+        "queueEmpty": "Every closed trade has been reviewed.",
+        "concepts": "Concepts most recorded",
+        "setups": "Setups used"
+      },
+      "metrics": {
+        "netPnl": "Net P&L",
+        "averageR": "Average R",
+        "winRate": "Win rate",
+        "expectancy": "Expectancy",
+        "sample": "Closed trades",
+        "maxDrawdown": "Max drawdown",
+        "bestR": "Best",
+        "worstR": "Worst",
+        "reviewRate": "Reviewed",
+        "adherence": "Rule adherence",
+        "wins": "Wins",
+        "losses": "Losses",
+        "breakeven": "Breakeven",
+        "open": "Open",
+        "planned": "Planned",
+        "cancelled": "Cancelled"
+      },
+      "minSample": "Needs at least 5 closed trades",
+      "trades": {
+        "title": "Trades",
+        "instrument": "Instrument",
+        "direction": "Direction",
+        "status": "Status",
+        "setup": "Setup",
+        "opened": "Opened",
+        "result": "Result",
+        "rMultiple": "R",
+        "filterAll": "All",
+        "reviewed": "Reviewed",
+        "notReviewed": "Not reviewed"
+      },
+      "detail": {
+        "title": "Trade",
+        "plan": "The plan",
+        "outcome": "Outcome",
+        "entry": "Entry",
+        "stop": "Invalidation",
+        "target": "Target",
+        "exit": "Exit",
+        "risk": "Risk",
+        "plannedR": "Planned R",
+        "held": "Held",
+        "concepts": "Concepts",
+        "notes": "Notes",
+        "reviewTitle": "Review",
+        "notReviewed": "This trade has not been reviewed.",
+        "openSetup": "Open the setup specification",
+        "close": "Close"
+      },
+      "review": {
+        "title": "Review",
+        "lead": "Reviewing asks whether the process was followed. It is a separate question from whether the trade won.",
+        "queueEmpty": "Nothing is waiting for review.",
+        "rules": {
+          "context": "Was the market context valid?",
+          "setup": "Was the setup actually present?",
+          "execution": "Was execution consistent with the plan?",
+          "risk": "Was risk handled correctly?"
+        },
+        "adherence": {
+          "followed": "Followed",
+          "violated": "Violated",
+          "notApplicable": "N/A",
+          "unknown": "Unknown"
+        },
+        "conceptsLabel": "What mattered here",
+        "save": "Save review",
+        "saved": "Review saved"
+      },
+      "analytics": {
+        "title": "Analytics",
+        "performance": "Performance",
+        "process": "Process",
+        "research": "Research",
+        "violations": "Rules broken most often",
+        "conceptUsage": "Concept distribution",
+        "setupUsage": "Setup usage",
+        "note": "Every figure is calculated from the records below it. Where the sample is too small, nothing is shown."
+      },
+      "statuses": {
+        "planned": "Planned",
+        "open": "Open",
+        "closed": "Closed",
+        "cancelled": "Cancelled"
+      },
+      "directions": {
+        "long": "Long",
+        "short": "Short"
+      },
+      "outcomes": {
+        "win": "Win",
+        "loss": "Loss",
+        "breakeven": "Breakeven"
+      }
+    }
+  },
   "viz": {
     "disclosures": {
       "synthetic": "Illustrative diagram. Synthetic price data, not a trade record and not a performance claim.",

@@ -220,6 +220,22 @@ Renderer instances follow the same discipline: at most one active per page,
 mounted on intersection, and at most one server-rendered full-fidelity chart
 fallback per document. Cards get a glyph, not a chart.
 
+## 8c. Private data never touches a public surface
+
+Journal records are user-private. They are not server-rendered, not placed in
+any static route, not registered with the global search index, and not threaded
+through a shared client component. The application shell prerenders empty and
+carries `noindex`; a single record is addressed by URL fragment, which never
+reaches a server.
+
+Financial values are integers — money in minor units, prices scaled, ratios in
+basis points — with one division and one rounding at the end. A journal that
+reports different totals depending on summation order is not evidence.
+
+No derived figure is stored beside its inputs, and no metric is shown that the
+sample does not support. `null` means insufficient data and must never render
+as `0`.
+
 ## 9. Definition of done
 
 A feature is not finished because it renders. It is finished when:

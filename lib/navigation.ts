@@ -108,7 +108,7 @@ export const primaryNav: readonly NavNode[] = [
     id: "journal",
     labelKey: "journal",
     segment: "journal",
-    status: "placeholder",
+    status: "active",
     children: [
       { id: "journal.product", labelKey: "journalProduct", status: "planned" },
       { id: "journal.how", labelKey: "howItWorks", status: "planned" },
