@@ -3317,3 +3317,336 @@
     display: none;
   }
 }
+
+/* ==========================================================================
+   EPIC 09 — TRADE CAPTURE & REVIEW INTELLIGENCE
+   ==========================================================================
+
+   Capture is the first surface in this product where the user does real work
+   rather than reads. Two consequences drive everything below.
+
+   MOBILE IS THE PRIMARY CASE (§37), not a narrowed desktop. A trade gets
+   journalled on a phone, minutes after it closed, one-handed. So: single
+   column by default and a grid only when there is room, controls at 2.75rem
+   so a thumb can hit them, and the save bar stuck to the bottom of the
+   viewport where a virtual keyboard cannot bury it.
+
+   ERRORS ARE TEXT (§38). Every invalid field gets a message and a left border,
+   never colour alone — the state is legible to someone who cannot distinguish
+   red from grey, and to a screen reader through `aria-describedby`.
+   ========================================================================== */
+
+@layer components {
+
+  /* --- LIST HEADER AND FILTERS ------------------------------------------ */
+
+  .japp-view-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+  }
+
+  .japp-filters-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  .japp-filters-group .japp-filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    border: 0;
+    padding: 0;
+  }
+
+  .japp-filters-group legend {
+    color: var(--text-muted);
+    padding-inline-end: var(--space-3);
+  }
+
+  /* A demo row says so, in the table and in the detail. §27 forbids ever
+     reading a figure without knowing where the record came from. */
+  .japp-origin {
+    margin-inline-start: var(--space-2);
+    padding-inline: var(--space-2);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  .japp-detail-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    padding-block-end: var(--space-4);
+    border-block-end: 1px solid var(--border-subtle);
+  }
+
+  .pill[data-kind="reviewed"] { color: var(--text-secondary); border-color: var(--border-strong); }
+  .pill[data-kind="inReview"] { color: var(--accent); border-color: var(--accent); }
+
+  /* --- CAPTURE FORM ------------------------------------------------------ */
+
+  .jform {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-10);
+    /* Room for the sticky action bar so the last field is never trapped
+       underneath it. */
+    padding-block-end: 6rem;
+  }
+
+  .jform-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    border: 0;
+    border-block-start: 1px solid var(--border-subtle);
+    padding: 0;
+    padding-block-start: var(--space-6);
+  }
+
+  .jform-section legend {
+    padding-inline-end: var(--space-3);
+  }
+
+  /* One column on a phone. Two only once there is genuinely room for two —
+     a 390px viewport showing two 8-character price fields is worse than one. */
+  .jform-grid {
+    display: grid;
+    gap: var(--space-5);
+  }
+
+  @media (width >= 40rem) {
+    .jform-grid { grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); }
+  }
+
+  .japp-field label {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-3);
+  }
+
+  /* Required/optional stated on every field rather than inferred from an
+     asterisk nobody has a legend for (§8). */
+  .japp-req {
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .japp-field input,
+  .japp-field select,
+  .japp-field textarea,
+  .jpicker-search input {
+    inline-size: 100%;
+    min-block-size: 2.75rem;
+    padding-inline: var(--space-3);
+    padding-block: var(--space-2);
+    background-color: var(--surface);
+    color: var(--text-primary);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    font: inherit;
+  }
+
+  .japp-field textarea { min-block-size: 5rem; resize: vertical; }
+
+  .japp-field input:focus-visible,
+  .japp-field select:focus-visible,
+  .japp-field textarea:focus-visible,
+  .jpicker-search input:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+
+  /* Never colour alone: the border weight changes and a message appears. */
+  .japp-field[data-invalid="true"] input,
+  .japp-field[data-invalid="true"] select,
+  .japp-field[data-invalid="true"] textarea {
+    border-color: var(--status-danger);
+    border-inline-start-width: 3px;
+  }
+
+  .japp-error { color: var(--status-danger); }
+
+  .jform-errors {
+    padding: var(--space-5);
+    border: 1px solid var(--status-danger);
+    border-radius: var(--radius-sm);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .jform-errors:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .jform-errors ul { display: flex; flex-direction: column; gap: var(--space-2); }
+  .jform-errors a { color: var(--status-danger); }
+
+  /* The §7 argument, made visible: a value the form could have asked for,
+     calculated instead. */
+  .jform-derived {
+    padding: var(--space-5);
+    background-color: var(--surface);
+    border-radius: var(--radius-sm);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .jform-derived-value {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-4);
+  }
+
+  .jform-actions {
+    position: sticky;
+    inset-block-end: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    padding-block: var(--space-4);
+    background-color: var(--background);
+    border-block-start: 1px solid var(--border-subtle);
+  }
+
+  /* --- CONCEPT PICKER ---------------------------------------------------- */
+
+  .jpicker { display: flex; flex-direction: column; gap: var(--space-3); }
+
+  .jpicker-selected {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    min-block-size: 2.75rem;
+    align-items: center;
+  }
+
+  .jpicker-selected li {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding-inline: var(--space-3);
+    padding-block: var(--space-1);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    font-size: var(--size-caption);
+  }
+
+  .jpicker-selected button {
+    min-inline-size: 1.75rem;
+    min-block-size: 1.75rem;
+    color: var(--text-muted);
+    cursor: pointer;
+  }
+
+  .jpicker-selected button:hover { color: var(--status-danger); }
+  .jpicker-selected button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+  .jpicker-search { position: relative; display: flex; flex-direction: column; gap: var(--space-2); }
+
+  .jpicker-options {
+    position: absolute;
+    inset-inline: 0;
+    inset-block-start: 100%;
+    z-index: 5;
+    max-block-size: 15rem;
+    overflow-y: auto;
+    background-color: var(--surface-raised, var(--surface));
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+  }
+
+  .jpicker-options li button {
+    inline-size: 100%;
+    text-align: start;
+    min-block-size: 2.75rem;
+    padding-inline: var(--space-3);
+    cursor: pointer;
+    color: var(--text-secondary);
+  }
+
+  .jpicker-options li[data-active="true"] button,
+  .jpicker-options li button:hover {
+    background-color: var(--surface);
+    color: var(--text-primary);
+  }
+
+  .jpicker-options > li.type-caption { padding: var(--space-3); }
+
+  /* --- CONFIRMATION DIALOG ----------------------------------------------- */
+
+  .jdialog {
+    margin: auto;
+    max-inline-size: min(32rem, calc(100vw - 2 * var(--space-5)));
+    padding: var(--space-6);
+    background-color: var(--background);
+    color: var(--text-primary);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-md, var(--radius-sm));
+  }
+
+  .jdialog::backdrop { background-color: rgb(0 0 0 / 0.6); }
+  .jdialog h2 { margin-block-end: var(--space-3); }
+
+  .jdialog-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-block-start: var(--space-6);
+  }
+
+  /* --- SETTINGS ---------------------------------------------------------- */
+
+  .jsettings-block {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-4);
+    padding-block-start: var(--space-6);
+    border-block-start: 1px solid var(--border-subtle);
+  }
+
+  .jsettings-block[data-danger="true"] { border-block-start-color: var(--status-danger); }
+
+  .jsettings-mode {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .jsettings-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    max-inline-size: var(--container-text);
+    list-style: disc;
+    padding-inline-start: var(--space-5);
+  }
+
+  /* --- REVIEW INTELLIGENCE ----------------------------------------------- */
+
+  .jinsights { display: flex; flex-direction: column; gap: var(--space-3); }
+
+  .jinsights li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--space-3);
+    padding-block: var(--space-3);
+    border-block-end: 1px solid var(--border-subtle);
+  }
+
+  /* The count is never separated from its denominator: "3" is a claim,
+     "3 of 12" is a fact (§22, §23). */
+  .jinsights-subject { color: var(--text-primary); flex: 1 1 auto; }
+  .jinsights .type-data { color: var(--text-muted); }
+}

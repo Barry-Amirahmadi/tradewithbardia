@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import JournalApp from "@/components/journal/app/JournalApp";
 import { isLocale, locales } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/dictionaries";
-import { appViews, isAppView, type AppView } from "@/lib/journal/views";
+import { appScreenSegments, resolveAppScreen } from "@/lib/journal/views";
 
 /**
  * THE PRIVATE APPLICATION SHELL — master prompt §14, §24, §25, §42.
@@ -25,12 +25,17 @@ import { appViews, isAppView, type AppView } from "@/lib/journal/views";
 export const dynamicParams = false;
 
 export function generateStaticParams() {
-  // The four known views, plus the bare `/app` root. Never a route per record:
-  // trade ids are user data and are addressed by URL fragment instead.
-  return locales.flatMap((locale) => [
-    { locale, view: [] as string[] },
-    ...appViews.map((view) => ({ locale, view: [view] })),
-  ]);
+  // Every application screen, and nothing else. `appScreenSegments` is the same
+  // array the resolver reads, so a screen cannot be routable without also being
+  // prerendered — the failure that only shows up in the exported build.
+  //
+  // NEVER A ROUTE PER RECORD (§34). `/app/trades/new` is a screen and carries no
+  // id; a trade being created does not have one yet. Every existing trade is
+  // addressed by URL fragment, which is never sent to a server and therefore
+  // cannot appear in the route manifest, an access log or a crawl.
+  return locales.flatMap((locale) =>
+    appScreenSegments.map((view) => ({ locale, view: [...view] })),
+  );
 }
 
 export async function generateMetadata({
@@ -55,19 +60,18 @@ export default async function AppPage({
   const { locale, view } = await params;
   if (!isLocale(locale)) notFound();
 
-  const segment = view?.[0];
-  // A bare `/app` is the dashboard; anything unrecognised is a routing miss.
-  const active: AppView =
-    segment === undefined ? "dashboard" : isAppView(segment) ? segment : "dashboard";
-  if (segment !== undefined && !isAppView(segment)) notFound();
-  if ((view?.length ?? 0) > 1) notFound();
+  // A mistyped URL is a 404, not a silent redirect to the dashboard — a
+  // fallback would hide broken links rather than surface them.
+  const screen = resolveAppScreen(view ?? []);
+  if (screen === null) notFound();
 
   const dictionary = await getDictionary(locale);
 
   return (
     <JournalApp
       locale={locale}
-      view={active}
+      view={screen.view}
+      mode={screen.mode}
       journal={dictionary.journal}
       concepts={dictionary.concepts}
       lab={dictionary.lab}

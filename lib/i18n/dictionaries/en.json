@@ -642,7 +642,8 @@
         "dashboard": "Dashboard",
         "trades": "Trades",
         "review": "Review",
-        "analytics": "Analytics"
+        "analytics": "Analytics",
+        "settings": "Settings"
       },
       "notSignedIn": "No account. This is a local demo of the application shell.",
       "reset": "Reset demo data",
@@ -752,6 +753,172 @@
         "win": "Win",
         "loss": "Loss",
         "breakeven": "Breakeven"
+      },
+      "storage": {
+        "empty": "No data",
+        "demo": "Demo data",
+        "local": "Your data",
+        "mixed": "Demo + your data"
+      },
+      "storageNote": {
+        "empty": "Nothing is stored. Add a trade or restore the demo set.",
+        "demo": "Demo records only — illustrative, not a performance record.",
+        "local": "Your own records, stored in this browser only, never uploaded.",
+        "mixed": "Your records alongside the demo set. Demo rows are labelled in the table."
+      },
+      "reviewStates": {
+        "notReviewed": "Not reviewed",
+        "inReview": "In review",
+        "reviewed": "Reviewed"
+      },
+      "capture": {
+        "newTitle": "Add a trade",
+        "editTitle": "Edit trade",
+        "lead": "Record the decision. Everything the system can work out — profit, R multiple, whether it won — is calculated from what you enter here, never typed in.",
+        "addTrade": "Add trade",
+        "sections": {
+          "context": "Context",
+          "setup": "Setup",
+          "execution": "Execution",
+          "risk": "Risk",
+          "outcome": "Outcome",
+          "notes": "Notes"
+        },
+        "sectionNotes": {
+          "context": "When it happened and what you were trading.",
+          "setup": "Which setup you claimed, and which concepts were actually involved.",
+          "execution": "Where you got in and where the idea is wrong.",
+          "risk": "What was at stake if the stop was hit.",
+          "outcome": "Only once the trade has closed.",
+          "notes": "Anything the fields above cannot hold."
+        },
+        "fields": {
+          "status": "Status",
+          "instrument": "Instrument",
+          "direction": "Direction",
+          "session": "Session",
+          "timeframe": "Timeframe",
+          "setupId": "Setup",
+          "conceptIds": "Concepts",
+          "entry": "Entry",
+          "stop": "Invalidation",
+          "target": "Target",
+          "exit": "Exit",
+          "riskAmount": "Risk amount",
+          "openedAt": "Opened",
+          "closedAt": "Closed",
+          "notes": "Notes"
+        },
+        "hints": {
+          "stop": "Where the idea is wrong. Below entry for a long, above it for a short.",
+          "target": "Optional. Above entry for a long, below it for a short.",
+          "riskAmount": "What you lose if the stop is hit. Every R figure is measured against this.",
+          "exit": "Required once the status is Closed.",
+          "openedAt": "Times are recorded and displayed in UTC.",
+          "notes": "Optional."
+        },
+        "none": "Not set",
+        "required": "Required",
+        "optional": "Optional",
+        "derivedTitle": "Calculated for you",
+        "derivedNote": "Profit and loss, R multiple, win or loss, expectancy and drawdown are all derived from the values above. The journal never asks you to type a result.",
+        "plannedR": "Planned R",
+        "plannedRNote": "Needs an entry, an invalidation and a target.",
+        "save": "Save trade",
+        "saveChanges": "Save changes",
+        "cancel": "Cancel",
+        "errorTitle": "This trade cannot be saved yet",
+        "errorIntro": "Fix the following and try again.",
+        "created": "Trade saved",
+        "updated": "Changes saved"
+      },
+      "errors": {
+        "required": "This field is required.",
+        "notANumber": "Enter a number, using a dot for decimals.",
+        "notRecognised": "That is not one of the available options.",
+        "notADateTime": "Enter a valid date and time.",
+        "notAPositivePrice": "A price must be greater than zero.",
+        "stopEqualsEntry": "Entry and invalidation cannot be the same price — there would be no risk to measure.",
+        "longStopBelowEntry": "For a long, the invalidation must sit below the entry.",
+        "shortStopAboveEntry": "For a short, the invalidation must sit above the entry.",
+        "longTargetAboveEntry": "For a long, the target must sit above the entry.",
+        "shortTargetBelowEntry": "For a short, the target must sit below the entry.",
+        "riskPositive": "Enter the amount you had at risk. It must be greater than zero.",
+        "closedNeedsExit": "A closed trade needs an exit price.",
+        "closedNeedsCloseTime": "A closed trade needs a closing time.",
+        "exitOnlyWhenClosed": "Only a closed trade has an exit. Change the status, or clear the exit.",
+        "closedBeforeOpened": "A trade cannot close before it opened.",
+        "notYetClosed": "A planned or open trade has no closing time yet.",
+        "unknownConcept": "That concept is not in the dictionary.",
+        "unknownSetup": "That setup is not in the library.",
+        "unknownAdherence": "That is not a valid answer.",
+        "emptyId": "This record has no identifier.",
+        "duplicateId": "A trade with this identifier already exists."
+      },
+      "picker": {
+        "search": "Search concepts",
+        "searchHint": "Type to filter, then use the arrow keys and Enter.",
+        "selected": "Selected",
+        "remove": "Remove",
+        "noMatch": "No concept matches that.",
+        "empty": "No concepts tagged yet.",
+        "question": "Which concepts were actually involved?"
+      },
+      "actions": {
+        "edit": "Edit",
+        "review": "Review",
+        "delete": "Delete",
+        "deleteTitle": "Delete this trade?",
+        "deleteBody": "The record and its review are removed from this browser permanently. Every metric that counted it will be recalculated. This cannot be undone.",
+        "deleteConfirm": "Delete permanently",
+        "deleteCancel": "Keep it",
+        "deleted": "Trade deleted"
+      },
+      "filters": {
+        "review": "Review",
+        "setup": "Setup",
+        "instrument": "Instrument",
+        "session": "Session",
+        "noSetup": "No setup",
+        "reset": "Clear filters",
+        "showing": "Showing"
+      },
+      "insights": {
+        "title": "What the records show",
+        "note": "Counts drawn from your own records. These describe what you traded, not why it worked — a count is not a cause.",
+        "empty": "Not enough records yet for any observation to mean anything.",
+        "basis": "{count} of {total}",
+        "topSetup": "Most traded setup",
+        "topConcept": "Most recorded concept",
+        "topViolation": "Most broken rule",
+        "reviewCompletion": "Closed trades reviewed"
+      },
+      "settings": {
+        "title": "Settings",
+        "lead": "Where your records live, and what this version of the journal does not yet do.",
+        "storageTitle": "Storage",
+        "storageBody": "Trades are held in this browser's local storage. Nothing is uploaded, there is no account, and no server ever sees a record. Clearing your browser data deletes them.",
+        "recordCount": "Records stored",
+        "migrationTitle": "Data format",
+        "migrationBody": "Records were written in an earlier format and have been read successfully.",
+        "droppedNote": "{count} stored row(s) could not be read and were skipped. The rest were kept.",
+        "limitationsTitle": "Known limitations",
+        "limitations": [
+          "Times are recorded and shown in UTC. The journal does not yet ask for your timezone, so a trade entered as 14:30 means 14:30 UTC.",
+          "Amounts are shown in US dollars. The journal does not yet record a currency per trade.",
+          "Records live in one browser. There is no account, no sync and no backup — use the export below before clearing browser data.",
+          "Screenshots cannot be attached yet."
+        ],
+        "exportTitle": "Export",
+        "exportBody": "Download every record as JSON. This is the only backup that exists.",
+        "export": "Export records",
+        "dangerTitle": "Reset",
+        "resetBody": "Delete everything in this browser and restore the twelve demo trades.",
+        "reset": "Restore demo data",
+        "resetConfirm": "Replace everything with the demo set?",
+        "deleteAllBody": "Delete every record, including the demo set, and start from an empty journal.",
+        "deleteAll": "Delete all records",
+        "deleteAllConfirm": "Delete every record permanently?"
       }
     }
   },

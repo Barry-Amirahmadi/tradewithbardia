@@ -8,7 +8,29 @@ commands are below. Automating it belongs with CI, not with Phase 0.
 
 ---
 
-## Measured baseline (2026-09-06, EPIC 08)
+
+### Client-component props are slices, not sections (EPIC 09)
+
+`/en/journal` **shrank** from 45 kB raw / 10.8 kB gzip to 34 kB / 7.4 kB while
+EPIC 09 was adding features to it.
+
+The public journal page is a server component, so only what it hands to the
+client demo is serialized into the document — and it was handing over the
+entire `journal` and `lab` dictionaries. When EPIC 09 added the capture form's
+copy to `journal.app`, all of it started shipping on a page with no form on it,
+along with all five setup specifications from `lab`.
+
+The fix is the same one EPIC 05 applied to the concept dictionary: pass the
+slice, not the section. `JournalDemoCopy` names exactly the keys the demo
+renders, which makes the narrowing load-bearing rather than cosmetic — adding a
+key to `journal.app` can no longer silently widen a public payload, because the
+component cannot see keys it did not ask for.
+
+**The general rule:** every prop crossing into a client component on a public
+route is a payload decision. Handing over a whole dictionary section makes that
+decision invisible and delegates it to whoever edits the JSON next.
+
+## Measured baseline (2026-09-07, EPIC 09)
 
 **Transfer and parse are separate budgets.** Until EPIC 05 this file stated one
 raw-byte ceiling for the document, and the EPIC 04 review showed that was
@@ -30,8 +52,9 @@ false alarm.
 | `/en/academy/[slug]` lesson | 84 kB | 110 kB | 20.4 kB | 30 kB |
 | `/en/dictionary` landing | 39 kB | 90 kB | 9.1 kB | 25 kB |
 | `/en/dictionary/[slug]` term | 30 kB | 90 kB | 6.2 kB | 25 kB |
-| `/en/journal` public | 45 kB | 90 kB | 10.8 kB | 25 kB |
-| `/en/app/*` shell | 44–48 kB | 90 kB | 12.7–13.0 kB | 25 kB |
+| `/en/journal` public | 34 kB | 90 kB | 7.4 kB | 25 kB |
+| `/en/app/trades/new` | 59 kB | 90 kB | 16.0 kB | 25 kB |
+| `/en/app/*` shell | 52–55 kB | 90 kB | 14.9–15.2 kB | 25 kB |
 | `/en/about` placeholder | 19 kB | 40 kB | 4.7 kB | 15 kB |
 
 The home page fell from 109 kB to 86 kB in this epic because the Trading System
@@ -52,7 +75,7 @@ document was the headroom fix the EPIC 04 review recommended.
 
 | Constraint | Rule | Measured |
 |---|---|---|
-| Active renderer instances per page | **≤ 1** | setup detail 1; library, academy, dictionary and **journal 0** |
+| Active renderer instances per page | **≤ 1** | setup detail 1; library, academy, dictionary, **journal and the whole application 0** |
 | SSR'd full-fidelity chart fallbacks | **≤ 1 per document** | home 1 (hero), everywhere else 0 |
 | Card preview payload | ≤ 1 kB per card | ~340 B glyph |
 | Setup dataset in a shared client component | **forbidden** | route-scoped |

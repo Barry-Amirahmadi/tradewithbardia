@@ -48,7 +48,13 @@ export type AnalyticsEvent =
   // are local demo identifiers and never leave the browser.
   | "journal_app_view"
   | "journal_trade_open"
-  | "journal_review_save";
+  | "journal_review_save"
+  // Trade Capture (EPIC 09). Ids are record ids, which never leave the
+  // browser: `track` has no sink and makes no network request, and a real
+  // provider must be given the event without the id before one is added.
+  | "journal_trade_create"
+  | "journal_trade_update"
+  | "journal_trade_delete";
 
 /**
  * Payloads carry identifiers and UI state only. No free text from a user, no

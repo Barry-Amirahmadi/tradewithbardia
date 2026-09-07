@@ -5,6 +5,7 @@ import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/dictionary-type";
 import {
   conceptUsage,
+  insights,
   performance,
   process,
   ruleViolations,
@@ -43,6 +44,7 @@ export default function AnalyticsView({
   lab: Dictionary["lab"];
 }) {
   const app = journal.app;
+  const found = insights(trades);
   const perf = performance(trades);
   const proc = process(trades);
 
@@ -114,6 +116,48 @@ export default function AnalyticsView({
             count: row.count,
           }))}
         />
+      </section>
+
+      {/* REVIEW INTELLIGENCE — §22, §23.
+
+          Counts, gated on sample size and on the leader being distinguishable
+          from the runner-up. Each row shows the numbers it rests on, so the
+          claim can be checked rather than believed, and the copy says outright
+          that a count is not a cause. An empty list is the honest answer when
+          there are eleven trades: there is nothing here yet worth saying. */}
+      <section>
+        <h3 className="type-h3">{app.insights.title}</h3>
+        <p className="type-caption text-muted max-w-[var(--container-text)]">
+          {app.insights.note}
+        </p>
+        {found.length === 0 ? (
+          <p className="type-lead text-muted">{app.insights.empty}</p>
+        ) : (
+          <ul className="jinsights">
+            {found.map((insight) => {
+              const subject =
+                insight.subjectId === undefined
+                  ? null
+                  : insight.kind === "topSetup"
+                    ? lab.items[insight.subjectId as keyof typeof lab.items]?.title ?? insight.subjectId
+                    : insight.kind === "topConcept"
+                      ? concepts[insight.subjectId as TradingConceptId].term
+                      : app.review.rules[insight.subjectId as keyof typeof app.review.rules] ??
+                        insight.subjectId;
+              return (
+                <li key={insight.kind} data-kind={insight.kind}>
+                  <span className="type-label text-accent">{app.insights[insight.kind]}</span>
+                  {subject !== null ? <span className="jinsights-subject">{subject}</span> : null}
+                  <span className="type-data" dir="ltr">
+                    {app.insights.basis
+                      .replace("{count}", formatCount(insight.count, locale))
+                      .replace("{total}", formatCount(insight.total, locale))}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        )}
       </section>
     </div>
   );

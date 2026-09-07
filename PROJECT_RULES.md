@@ -236,6 +236,28 @@ No derived figure is stored beside its inputs, and no metric is shown that the
 sample does not support. `null` means insufficient data and must never render
 as `0`.
 
+## 8d. User input is parsed, never coerced
+
+A value typed by a person is untrusted text until it has been parsed. The
+parse is explicit, refuses rather than guesses, and reports every problem at
+once. `Number("")` is `0` and `Number(" ")` is `0`; a form that leans on them
+records a trade with a zero stop and no one finds out until a metric is wrong.
+
+Errors carry stable codes, not English sentences, so every message is
+translatable and a test can assert none is missing.
+
+The application never asks for a value it can derive. No P&L field, no R
+field, no win/loss selector — a figure the user could type is a figure that can
+disagree with the record beside it.
+
+Validation runs in one place and applies to every writer: the capture form, an
+edit, a migration, and any future importer are held to the same definition of a
+valid trade. Validation is also pointed at data read back from storage, so it
+must survive genuinely malformed input rather than assuming its own types.
+
+Nothing is destroyed without a confirmation that names the consequence, and
+nothing that was written is silently reinterpreted by a later version.
+
 ## 9. Definition of done
 
 A feature is not finished because it renders. It is finished when:

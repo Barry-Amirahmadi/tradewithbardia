@@ -102,7 +102,26 @@ export default async function JournalPage({
 
       {/* The one client island on this page. Labelled DEMO DATA, and every
           figure inside it is computed from the demo records (§13, §37). */}
-      <JournalDemo locale={locale} journal={journal} lab={dictionary.lab} />
+      {/* One explicit slice per key. Verbose on purpose: it is the list of
+          what actually crosses into the public document, and it changes only
+          when someone means it to (§41). */}
+      <JournalDemo
+        locale={locale}
+        copy={{
+          demoLabel: journal.demoLabel,
+          demoNote: journal.demoNote,
+          insufficient: journal.insufficient,
+          openApp: journal.openApp,
+          metrics: journal.app.metrics,
+          minSample: journal.app.minSample,
+          outcomes: journal.app.outcomes,
+          directions: journal.app.directions,
+          detail: journal.app.detail,
+          trades: journal.app.trades,
+          review: journal.app.review,
+          instruments: dictionary.lab.instruments,
+        }}
+      />
     </PageMain>
   );
 }

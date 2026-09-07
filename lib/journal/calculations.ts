@@ -4,7 +4,7 @@ import {
   type BasisPoints,
   type Money,
 } from "./money";
-import type { Trade } from "./trade";
+import { reviewState, type Trade } from "./trade";
 
 /**
  * TRADE CALCULATIONS — master prompt §6, §7, §19.
@@ -108,18 +108,27 @@ export function holdingMinutes(trade: Trade): number | null {
   return Math.round((closed - opened) / 60_000);
 }
 
-/** Trades that produced an outcome. Everything statistical starts here. */
-export function closedTrades(trades: readonly Trade[]): readonly Trade[] {
+/**
+ * Trades that produced an outcome. Everything statistical starts here.
+ *
+ * Generic so the element type survives the filter: a caller passing
+ * `StoredTrade[]` gets `StoredTrade[]` back and keeps `origin`, which the
+ * review queue needs in order to label demo records.
+ */
+export function closedTrades<T extends Trade>(trades: readonly T[]): readonly T[] {
   return trades.filter((trade) => trade.status === "closed" && trade.exit !== undefined);
 }
 
 /**
- * Whether a trade was reviewed. Separate from whether it won — that
+ * Whether a trade was **fully** reviewed. A review left in progress does not
+ * count (EPIC 09 §19) — counting it would inflate the review rate with work
+ * that was started and abandoned, which is the opposite of what the metric is
+ * for. Separate from whether it won — that
  * separation is the product's central claim, so it is a function, not a flag
  * someone might set by hand.
  */
 export function isReviewed(trade: Trade): boolean {
-  return trade.review !== undefined;
+  return reviewState(trade) === "reviewed";
 }
 
 /**

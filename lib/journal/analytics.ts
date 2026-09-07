@@ -207,3 +207,133 @@ export function ruleViolations(trades: readonly Trade[]): readonly UsageRow[] {
   }
   return [...rows.values()].sort((a, b) => b.count - a.count || a.id.localeCompare(b.id));
 }
+
+/**
+ * REVIEW INTELLIGENCE — master prompt §22, §23.
+ *
+ * Structured observations derived from records. No AI, no model, no
+ * correlation, no causality — §22 permits counts and forbids the rest, and
+ * that restriction is the honest one: with a few dozen trades, "you lose more
+ * on Fridays" is noise wearing the costume of a finding.
+ *
+ * TWO GATES, and an insight appears only if it passes both.
+ *
+ * **Sample.** The population behind the claim must reach `MIN_INSIGHT`. Below
+ * that the answer describes the sample rather than the trader.
+ *
+ * **Distinguishability.** The leader must be strictly ahead of the runner-up.
+ * Calling one of two equal counts "most common" is an arbitrary choice
+ * presented as a result — the sort of small dishonesty that costs a product
+ * its credibility faster than being wrong loudly.
+ *
+ * Each insight carries its own numbers so the interface can show what the
+ * claim rests on. The wording lives in the dictionaries: an insight is data,
+ * and baking an English sentence in here would make it untranslatable and
+ * unverifiable at once.
+ */
+
+/** The smallest population an observation may describe. */
+export const MIN_INSIGHT = 5;
+
+export type InsightKind =
+  | "topSetup"
+  | "topConcept"
+  | "topViolation"
+  | "reviewCompletion";
+
+export interface Insight {
+  kind: InsightKind;
+  /** Canonical id of the subject — a setup slug, a concept id, a rule id. */
+  subjectId?: string;
+  /** How many records support the observation. */
+  count: number;
+  /** The population it was drawn from. Always shown beside the count. */
+  total: number;
+}
+
+/** The leader of a usage table, or null when it is a tie or too small. */
+function leader(
+  rows: readonly UsageRow[],
+  total: number,
+): { id: string; count: number } | null {
+  if (total < MIN_INSIGHT) return null;
+  const [first, second] = rows;
+  if (first === undefined) return null;
+  if (second !== undefined && second.count === first.count) return null;
+  return { id: first.id, count: first.count };
+}
+
+export function insights(trades: readonly Trade[]): readonly Insight[] {
+  const found: Insight[] = [];
+
+  const withSetup = trades.filter((trade) => trade.setupId !== undefined);
+  const topSetup = leader(setupUsage(trades), withSetup.length);
+  if (topSetup !== null) {
+    found.push({
+      kind: "topSetup",
+      subjectId: topSetup.id,
+      count: topSetup.count,
+      total: withSetup.length,
+    });
+  }
+
+  const tagged = trades.filter(
+    (trade) => trade.conceptIds.length > 0 || (trade.review?.conceptIds.length ?? 0) > 0,
+  );
+  const topConcept = leader(conceptUsage(trades), tagged.length);
+  if (topConcept !== null) {
+    found.push({
+      kind: "topConcept",
+      subjectId: topConcept.id,
+      count: topConcept.count,
+      total: tagged.length,
+    });
+  }
+
+  // Violations are counted against reviewed trades, not all trades: a rule
+  // cannot be observed as broken on a trade nobody reviewed, so the wider
+  // denominator would understate every rate here.
+  const reviewed = trades.filter(isReviewed);
+  const topViolation = leader(ruleViolations(trades), reviewed.length);
+  if (topViolation !== null) {
+    found.push({
+      kind: "topViolation",
+      subjectId: topViolation.id,
+      count: topViolation.count,
+      total: reviewed.length,
+    });
+  }
+
+  // Review completion is a count of work done, not a claim about the market,
+  // so it needs no distinguishability gate — only enough records to mean
+  // something.
+  const closed = closedTrades(trades);
+  if (closed.length >= MIN_INSIGHT) {
+    found.push({
+      kind: "reviewCompletion",
+      count: closed.filter(isReviewed).length,
+      total: closed.length,
+    });
+  }
+
+  return found;
+}
+
+/**
+ * WHOSE DATA IS ON SCREEN — master prompt §27, §50.
+ *
+ * Derived from the records themselves rather than from a stored flag, so the
+ * label cannot drift from what is actually being displayed. `mixed` is a real
+ * state and is reported as such: once a user adds a trade beside the demo set,
+ * calling the whole thing "demo data" would be false, and calling it "your
+ * data" would be worse.
+ */
+export type StorageMode = "empty" | "demo" | "local" | "mixed";
+
+export function storageMode(trades: readonly { origin: string }[]): StorageMode {
+  if (trades.length === 0) return "empty";
+  const demo = trades.some((trade) => trade.origin === "demo");
+  const user = trades.some((trade) => trade.origin === "user");
+  if (demo && user) return "mixed";
+  return demo ? "demo" : "local";
+}

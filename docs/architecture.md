@@ -588,6 +588,131 @@ Reads are defensive: `localStorage` throws in private mode, can be disabled,
 and can hold anything a previous version wrote. Malformed rows are dropped
 using the same pure validation the domain uses.
 
+### Trade capture and the review lifecycle
+
+EPIC 09. The Journal became usable: records are created, edited, reviewed and
+deleted rather than only read.
+
+#### The form/domain boundary
+
+A form holds strings; the domain holds integers, ISO instants and canonical
+ids. `lib/journal/draft.ts` is the only place those meet, and it is a pure
+function so every parsing rule is directly testable.
+
+The rule it exists for: **bad input never becomes valid-looking data.**
+`Number("")` is `0` and `Number("1,5")` is `NaN`, so a naive form records a
+trade with a zero stop or a price that formats as "—" forever. Parsing is
+explicit and refuses rather than coerces — no exponent notation, no thousands
+separator, no empty-string-as-zero.
+
+`parseDraft` runs its own parse pass and then `validateTrade`, the same domain
+rules the repository enforces. There is exactly one definition of a valid
+trade, so a record created through the form and one written by any future
+importer are held to identical standards. All issues are collected before
+returning: a form that reveals one error per submission is a form people
+abandon.
+
+Errors carry a stable `IssueCode`, not an English sentence. Matching on message
+text to find a translation would tie every locale to the exact wording of a
+developer string; a test asserts every code has copy in both locales.
+
+#### What the form does not ask for
+
+No P&L, no R multiple, no win/loss selector. Those are derived. A user who
+could type a P&L could type one that disagrees with the prices beside it, and
+then the journal is no longer evidence. Planned R is shown live from entry,
+stop and target as a demonstration that the arithmetic is real — and as "—"
+the moment its inputs are absent.
+
+#### Trade lifecycle
+
+`planned → open → closed`, with `cancelled` as a terminal state that is not a
+loss. Status determines which calculations are valid: only a closed trade with
+an exit produces an outcome, and the domain refuses an exit on a trade that is
+not closed rather than inventing one to make a dashboard populate.
+
+#### Review lifecycle
+
+`notReviewed → inReview → reviewed`, **derived** from the record by
+`reviewState`. A stored status could disagree with the review it describes; a
+derived one cannot.
+
+Completion is declared, never inferred. Opening a trade does not start a
+review and answering three of four questions does not finish one. "Save as
+draft" writes `complete: false` and the trade stays in the queue.
+
+`complete` is optional and **absent means complete**. That is what lets every
+EPIC 08 record migrate untouched: twelve demo trades and any review a user had
+already saved keep meaning exactly what they meant.
+
+Reviews are editable. A judgement made the evening of a trade is often wrong a
+month later, and editing goes through the same repository call as creating.
+
+#### Analytics recalculation
+
+```text
+mutation → repository → subscribe → re-read → every metric recomputes
+```
+
+One repository, one analytics engine, no component patching a number. Adding a
+trade changes the dashboard without a line of code connecting the two, and
+tests assert the arithmetic exactly: the difference a deleted trade makes to
+net P&L equals its own realised P&L, because the values are integers.
+
+#### Review intelligence
+
+Counts, gated twice: the population must reach `MIN_INSIGHT`, and the leader
+must be strictly ahead of the runner-up. Calling one of two equal counts "most
+common" is an arbitrary choice presented as a result. Every insight carries the
+denominator it rests on. No correlation is computed and no causality implied —
+with a few dozen trades, "you lose more on Fridays" is noise in a costume.
+
+#### Storage and migration
+
+EPIC 08 wrote a bare array; EPIC 09 writes a versioned envelope. Migration is
+deterministic and total — every input produces a result and there is no throw
+path, because this runs during the first render and a corrupt `localStorage`
+value must not show a blank screen.
+
+Two rules: **nothing is discarded wholesale** — a single unreadable row does
+not cost the user the other forty, rows are validated individually and only the
+bad ones dropped — and **nothing is reinterpreted**, so migration reshapes the
+envelope and never a field's meaning.
+
+`from: 0` means nothing was stored and the demo set is seeded. Any other
+version with zero rows means the user deleted everything, and re-seeding would
+resurrect records they removed on purpose.
+
+`validateTrade` is genuinely defensive rather than merely documented as such:
+it guards array fields with `Array.isArray` because a stored row's
+`conceptIds` may be missing entirely. Validation that can crash on malformed
+data cannot be the thing that protects against it.
+
+#### The privacy boundary, unchanged
+
+Records are still client-only, still addressed by URL fragment, still never in
+a static route. `/app/trades/new` is the one added route and it carries no id
+— a trade being created does not have one yet. `resolveAppScreen` returns null
+for anything unrecognised, so a trade id in the path is a 404 rather than a
+silent fallback, and a test asserts no demo id appears in any generated route.
+
+The fragment also carries a transient `saved` flag. Creating a trade navigates
+`/app/trades/new → /app/trades`, and that param change **remounts** the shell —
+verified in the browser — so component state holding a confirmation is
+destroyed before it can render. The fragment is the one channel that survives
+that boundary and is never sent to a server. It is stripped once announced.
+
+#### Future server migration seam
+
+`TradeRepository` is one async interface. A server-backed implementation is a
+new class and a different construction call in `JournalApp`, not a UI rewrite;
+every method is already async so a network adapter and a local one are the
+same shape to the caller. Extending `Trade` with `source`, `broker`,
+`externalTradeId` or `importedAt` for a future broker import needs no
+migration — the migration reader passes unknown fields through and validates
+what it knows. Attachments are the same story: the detail view is a list of
+sections, so a `TradeAttachment` section is an addition rather than a redesign.
+
 ## Motion
 
 One `requestAnimationFrame` loop for the whole application

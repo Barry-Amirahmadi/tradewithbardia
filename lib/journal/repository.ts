@@ -1,3 +1,4 @@
+import { migrateJson, serializeStorage, type MigrationResult } from "./migration";
 import { validateTrade, type StoredTrade, type Trade } from "./trade";
 
 /**
@@ -131,28 +132,32 @@ const STORAGE_KEY = "twb.journal.trades";
  */
 export class LocalTradeRepository implements TradeRepository {
   private readonly inner: MemoryTradeRepository;
+  /**
+   * What the last read found — which version was on disk and how many rows
+   * were unreadable. Surfaced in Settings rather than swallowed: a user whose
+   * records were partly dropped deserves to be told, not left to notice.
+   */
+  readonly migration: MigrationResult;
 
   constructor(seed: readonly StoredTrade[] = []) {
-    this.inner = new MemoryTradeRepository(LocalTradeRepository.read(seed));
+    this.migration = LocalTradeRepository.read();
+    // `from: 0` means nothing was stored — a first visit, so seed the demo
+    // set. Any other version means the user has been here, and an empty array
+    // then is a real state: they deleted everything, and re-seeding would
+    // resurrect records they removed on purpose.
+    const initial = this.migration.from === 0 ? seed : this.migration.trades;
+    this.inner = new MemoryTradeRepository(initial);
     this.inner.subscribe(() => void this.persist());
   }
 
-  private static read(seed: readonly StoredTrade[]): readonly StoredTrade[] {
-    if (typeof window === "undefined") return seed;
+  private static read(): MigrationResult {
+    if (typeof window === "undefined") return { trades: [], from: 0, dropped: 0 };
     try {
-      const raw = window.localStorage.getItem(STORAGE_KEY);
-      if (raw === null) return seed;
-      const parsed: unknown = JSON.parse(raw);
-      if (!Array.isArray(parsed)) return seed;
-      return parsed.filter(
-        (row): row is StoredTrade =>
-          typeof row === "object" &&
-          row !== null &&
-          typeof (row as StoredTrade).id === "string" &&
-          validateTrade(row as StoredTrade).length === 0,
-      );
+      return migrateJson(window.localStorage.getItem(STORAGE_KEY));
     } catch {
-      return seed;
+      // `localStorage` itself throws in private mode on some browsers — before
+      // any value is read. Treated as "nothing stored".
+      return { trades: [], from: 0, dropped: 0 };
     }
   }
 
@@ -160,7 +165,7 @@ export class LocalTradeRepository implements TradeRepository {
     if (typeof window === "undefined") return;
     try {
       const all = await this.inner.list();
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
+      window.localStorage.setItem(STORAGE_KEY, serializeStorage(all));
     } catch {
       // Storage full or blocked. The in-memory store still drives the session,
       // which beats throwing inside a click handler.

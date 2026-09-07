@@ -82,6 +82,33 @@ export interface TradeReview {
   observations?: string;
   lessons?: string;
   reviewedAt: string;
+  /**
+   * Whether the reviewer finished — EPIC 09 §19.
+   *
+   * **Absent means complete.** That default is what makes every EPIC 08 record
+   * migrate without being touched: twelve demo trades and any review a user
+   * had already saved keep meaning exactly what they meant, and the field only
+   * carries information when it says `false`.
+   *
+   * A review is never marked complete by the application. Opening a trade,
+   * viewing it, or partially answering does not finish it — §19 forbids
+   * inferring completion, so this is set by the save action and nothing else.
+   */
+  complete?: boolean;
+}
+
+/**
+ * THE REVIEW LIFECYCLE — §19.
+ *
+ * Three states, derived from the record rather than stored beside it. A stored
+ * status could disagree with the review it describes; a derived one cannot.
+ */
+export const reviewStates = ["notReviewed", "inReview", "reviewed"] as const;
+export type ReviewState = (typeof reviewStates)[number];
+
+export function reviewState(trade: Trade): ReviewState {
+  if (trade.review === undefined) return "notReviewed";
+  return trade.review.complete === false ? "inReview" : "reviewed";
 }
 
 export interface Trade {
@@ -129,8 +156,44 @@ export interface StoredTrade extends Trade {
   origin: TradeOrigin;
 }
 
+/**
+ * Stable machine-readable reasons — EPIC 09 §9.
+ *
+ * The interface must tell a user what is wrong with their trade, in their own
+ * language. Matching on an English sentence to find the translation would tie
+ * every locale to the exact wording of a developer message, so the code is the
+ * identity and `reason` stays a developer-facing string for logs and tests.
+ */
+export const issueCodes = [
+  "required",
+  "notANumber",
+  "notRecognised",
+  "notADateTime",
+  "notAPositivePrice",
+  "stopEqualsEntry",
+  "longStopBelowEntry",
+  "shortStopAboveEntry",
+  "longTargetAboveEntry",
+  "shortTargetBelowEntry",
+  "riskPositive",
+  "closedNeedsExit",
+  "closedNeedsCloseTime",
+  "exitOnlyWhenClosed",
+  "closedBeforeOpened",
+  "notYetClosed",
+  "unknownConcept",
+  "unknownSetup",
+  "unknownAdherence",
+  "emptyId",
+  "duplicateId",
+] as const;
+
+export type IssueCode = (typeof issueCodes)[number];
+
 export interface ValidationIssue {
   field: string;
+  code: IssueCode;
+  /** Developer-facing detail. Never rendered as the primary message. */
   reason: string;
 }
 
@@ -143,70 +206,123 @@ export interface ValidationIssue {
  */
 export function validateTrade(trade: Trade): readonly ValidationIssue[] {
   const issues: ValidationIssue[] = [];
-  const bad = (field: string, reason: string) => issues.push({ field, reason });
+  const bad = (field: string, code: IssueCode, reason: string) =>
+    issues.push({ field, code, reason });
 
-  if (trade.id.trim() === "") bad("id", "empty");
+  if (trade.id.trim() === "") bad("id", "emptyId", "empty");
 
   for (const [field, value] of [
     ["entry", trade.entry],
     ["stop", trade.stop],
   ] as const) {
-    if (!Number.isFinite(value) || value <= 0) bad(field, "not a positive price");
+    if (!Number.isFinite(value) || value <= 0) {
+      bad(field, "notAPositivePrice", "not a positive price");
+    }
   }
   for (const [field, value] of [
     ["target", trade.target],
     ["exit", trade.exit],
   ] as const) {
     if (value !== undefined && (!Number.isFinite(value) || value <= 0)) {
-      bad(field, "not a positive price");
+      bad(field, "notAPositivePrice", "not a positive price");
     }
   }
 
   if (trade.entry === trade.stop) {
-    bad("stop", "stop equals entry, so risk is undefined");
+    bad("stop", "stopEqualsEntry", "stop equals entry, so risk is undefined");
   }
   // Direction and stop must agree, or every derived figure inverts silently.
   if (trade.direction === "long" && trade.stop > trade.entry) {
-    bad("stop", "a long stop must sit below entry");
+    bad("stop", "longStopBelowEntry", "a long stop must sit below entry");
   }
   if (trade.direction === "short" && trade.stop < trade.entry) {
-    bad("stop", "a short stop must sit above entry");
+    bad("stop", "shortStopAboveEntry", "a short stop must sit above entry");
+  }
+
+  // A target on the wrong side of entry is not a pessimistic plan, it is an
+  // impossible one — it would make `plannedR` negative and quietly describe a
+  // trade nobody would take. §9: reject the obviously impossible rather than
+  // storing it and rendering nonsense downstream.
+  if (trade.target !== undefined) {
+    if (trade.direction === "long" && trade.target <= trade.entry) {
+      bad("target", "longTargetAboveEntry", "a long target must sit above entry");
+    }
+    if (trade.direction === "short" && trade.target >= trade.entry) {
+      bad("target", "shortTargetBelowEntry", "a short target must sit below entry");
+    }
   }
 
   if (!Number.isFinite(trade.riskAmount) || trade.riskAmount <= 0) {
-    bad("riskAmount", "risk must be a positive amount");
+    bad("riskAmount", "riskPositive", "risk must be a positive amount");
   }
 
   if (trade.status === "closed" && trade.exit === undefined) {
-    bad("exit", "a closed trade needs an exit price");
+    bad("exit", "closedNeedsExit", "a closed trade needs an exit price");
   }
   if (trade.status === "closed" && trade.closedAt === undefined) {
-    bad("closedAt", "a closed trade needs a close time");
+    bad("closedAt", "closedNeedsCloseTime", "a closed trade needs a close time");
   }
   if (trade.status !== "closed" && trade.exit !== undefined) {
-    bad("exit", "only a closed trade has an exit");
+    bad("exit", "exitOnlyWhenClosed", "only a closed trade has an exit");
   }
 
-  if (Number.isNaN(Date.parse(trade.openedAt))) bad("openedAt", "not an ISO date");
-  if (trade.closedAt !== undefined && Number.isNaN(Date.parse(trade.closedAt))) {
-    bad("closedAt", "not an ISO date");
+  const opened = Date.parse(trade.openedAt);
+  if (Number.isNaN(opened)) bad("openedAt", "notADateTime", "not an ISO date");
+  if (trade.closedAt !== undefined) {
+    const closed = Date.parse(trade.closedAt);
+    if (Number.isNaN(closed)) {
+      bad("closedAt", "notADateTime", "not an ISO date");
+    } else if (!Number.isNaN(opened) && closed < opened) {
+      // Time does not run backwards, and `holdingMinutes` already returns null
+      // for this case — storing it would mean a record whose duration can
+      // never be computed.
+      bad("closedAt", "closedBeforeOpened", "a trade cannot close before it opened");
+    }
+  }
+  // `closedAt` is only meaningful once the position left the market. A planned
+  // or open trade carrying one is a contradiction in the record itself.
+  if ((trade.status === "planned" || trade.status === "open") && trade.closedAt !== undefined) {
+    bad("closedAt", "notYetClosed", "a planned or open trade has not closed");
   }
 
   // Canonical references must resolve, or the knowledge layer has a hole.
-  for (const id of trade.conceptIds) {
-    if (!isTradingConceptId(id)) bad("conceptIds", `unknown concept "${id}"`);
+  //
+  // Guarded with `Array.isArray` rather than trusted from the type. This
+  // function is deliberately pointed at untrusted input — a row read back from
+  // `localStorage` that a previous version, another tab, or a corrupted write
+  // produced — and a `for...of` over a missing field throws. Validation that
+  // can crash on malformed data cannot be the thing that protects against it.
+  if (!Array.isArray(trade.conceptIds)) {
+    bad("conceptIds", "notRecognised", "conceptIds is not a list");
+  } else {
+    for (const id of trade.conceptIds) {
+      if (typeof id !== "string" || !isTradingConceptId(id)) {
+        bad("conceptIds", "unknownConcept", `unknown concept "${String(id)}"`);
+      }
+    }
   }
   if (trade.setupId !== undefined && getSetup(trade.setupId) === undefined) {
-    bad("setupId", `unknown setup "${trade.setupId}"`);
+    bad("setupId", "unknownSetup", `unknown setup "${trade.setupId}"`);
   }
 
-  if (trade.review !== undefined) {
-    for (const id of trade.review.conceptIds) {
-      if (!isTradingConceptId(id)) bad("review.conceptIds", `unknown concept "${id}"`);
+  if (trade.review !== undefined && trade.review !== null) {
+    if (!Array.isArray(trade.review.conceptIds)) {
+      bad("review.conceptIds", "notRecognised", "review conceptIds is not a list");
+    } else {
+      for (const id of trade.review.conceptIds) {
+        if (typeof id !== "string" || !isTradingConceptId(id)) {
+          bad("review.conceptIds", "unknownConcept", `unknown concept "${String(id)}"`);
+        }
+      }
     }
-    for (const rule of trade.review.rules) {
-      if (!adherenceStates.includes(rule.adherence)) {
-        bad("review.rules", `unknown adherence "${rule.adherence}"`);
+    if (!Array.isArray(trade.review.rules)) {
+      bad("review.rules", "notRecognised", "review rules is not a list");
+    } else {
+      for (const rule of trade.review.rules) {
+        if (rule === null || typeof rule !== "object" ||
+            !adherenceStates.includes(rule.adherence)) {
+          bad("review.rules", "unknownAdherence", `unknown adherence "${String(rule?.adherence)}"`);
+        }
       }
     }
   }

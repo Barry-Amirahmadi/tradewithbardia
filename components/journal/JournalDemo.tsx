@@ -24,6 +24,18 @@ import {
  * figures. Understanding the product by using it, rather than by reading three
  * more paragraphs about it.
  *
+ * PROPS ARE SLICES, NOT SECTIONS (EPIC 09 §41). This is a client component on
+ * a public page, so everything it is handed is serialized into the document.
+ * It used to receive the whole `journal` and `lab` dictionaries; when EPIC 09
+ * added the capture form's copy to `journal.app`, all of it — field labels,
+ * every validation message, the settings text — started shipping on a page
+ * with no form on it, along with all five setup specifications from `lab`.
+ *
+ * The narrow prop types below are the fix, and they are load-bearing rather
+ * than cosmetic: adding a key to `journal.app` can no longer silently widen a
+ * public payload, because this component cannot see keys it did not ask for.
+ * The same defect and the same remedy as the concept dictionary in EPIC 04.
+ *
  * TWO HONESTY RULES, both structural:
  *
  * 1. It is labelled `DEMO DATA` in the heading, and the records themselves
@@ -35,16 +47,31 @@ import {
  * The summary tiles are of the demo set, not of anyone's account, and the copy
  * says so. No balance, no equity curve, no performance claim (§13).
  */
+type App = Dictionary["journal"]["app"];
+
+/** Exactly the copy this demo renders, and nothing else. */
+export interface JournalDemoCopy {
+  demoLabel: string;
+  demoNote: string;
+  insufficient: string;
+  openApp: string;
+  metrics: App["metrics"];
+  minSample: App["minSample"];
+  outcomes: App["outcomes"];
+  directions: App["directions"];
+  detail: App["detail"];
+  trades: App["trades"];
+  review: App["review"];
+  instruments: Dictionary["lab"]["instruments"];
+}
+
 export default function JournalDemo({
   locale,
-  journal,
-  lab,
+  copy,
 }: {
   locale: Locale;
-  journal: Dictionary["journal"];
-  lab: Dictionary["lab"];
+  copy: JournalDemoCopy;
 }) {
-  const app = journal.app;
   const closed = demoTrades.filter((trade) => trade.status === "closed");
   const [activeId, setActiveId] = useState(closed[0]?.id ?? "");
   const active = demoTrades.find((trade) => trade.id === activeId);
@@ -53,24 +80,24 @@ export default function JournalDemo({
   const proc = process(demoTrades);
 
   return (
-    <section className="journal-demo" aria-label={journal.demoLabel}>
+    <section className="journal-demo" aria-label={copy.demoLabel}>
       <header className="journal-demo-head">
-        <p className="japp-banner-tag type-label">{journal.demoLabel}</p>
+        <p className="japp-banner-tag type-label">{copy.demoLabel}</p>
         <p className="type-caption text-muted max-w-[var(--container-text)]">
-          {journal.demoNote}
+          {copy.demoNote}
         </p>
       </header>
 
       <div className="metric-grid">
         <MetricTile
-          label={app.metrics.netPnl}
+          label={copy.metrics.netPnl}
           value={formatSignedMoney(perf.netPnl, locale)}
-          note={journal.insufficient}
+          note={copy.insufficient}
           emphasis
         />
-        <MetricTile label={app.metrics.averageR} value={formatR(perf.averageR)} note={journal.insufficient} />
-        <MetricTile label={app.metrics.winRate} value={formatPercent(perf.winRate, locale)} note={app.minSample} />
-        <MetricTile label={app.metrics.adherence} value={formatPercent(proc.adherence, locale)} note={journal.insufficient} />
+        <MetricTile label={copy.metrics.averageR} value={formatR(perf.averageR)} note={copy.insufficient} />
+        <MetricTile label={copy.metrics.winRate} value={formatPercent(perf.winRate, locale)} note={copy.minSample} />
+        <MetricTile label={copy.metrics.adherence} value={formatPercent(proc.adherence, locale)} note={copy.insufficient} />
       </div>
 
       <div className="journal-demo-body">
@@ -84,11 +111,11 @@ export default function JournalDemo({
                   aria-pressed={trade.id === activeId}
                   onClick={() => setActiveId(trade.id)}
                 >
-                  <span className="japp-list-main">{lab.instruments[trade.instrument]}</span>
+                  <span className="japp-list-main">{copy.instruments[trade.instrument]}</span>
                   <span className="type-caption text-muted">
                     {formatDate(trade.openedAt, locale)}
                   </span>
-                  {result !== null ? <Pill kind={result}>{app.outcomes[result]}</Pill> : null}
+                  {result !== null ? <Pill kind={result}>{copy.outcomes[result]}</Pill> : null}
                   <span className="type-data" dir="ltr">{formatR(rMultiple(trade))}</span>
                 </button>
               </li>
@@ -99,26 +126,26 @@ export default function JournalDemo({
         {active !== undefined ? (
           <article className="journal-demo-detail">
             <h3 className="type-h3">
-              {lab.instruments[active.instrument]} · {app.directions[active.direction]}
+              {copy.instruments[active.instrument]} · {copy.directions[active.direction]}
             </h3>
 
             <dl className="japp-dl">
-              <div><dt>{app.detail.entry}</dt><dd dir="ltr">{formatPrice(active.entry, locale)}</dd></div>
-              <div><dt>{app.detail.stop}</dt><dd dir="ltr">{formatPrice(active.stop, locale)}</dd></div>
-              <div><dt>{app.detail.exit}</dt><dd dir="ltr">{formatPrice(active.exit, locale)}</dd></div>
-              <div><dt>{app.trades.result}</dt><dd dir="ltr">{formatSignedMoney(realisedPnl(active), locale)}</dd></div>
-              <div><dt>{app.trades.rMultiple}</dt><dd dir="ltr">{formatR(rMultiple(active))}</dd></div>
+              <div><dt>{copy.detail.entry}</dt><dd dir="ltr">{formatPrice(active.entry, locale)}</dd></div>
+              <div><dt>{copy.detail.stop}</dt><dd dir="ltr">{formatPrice(active.stop, locale)}</dd></div>
+              <div><dt>{copy.detail.exit}</dt><dd dir="ltr">{formatPrice(active.exit, locale)}</dd></div>
+              <div><dt>{copy.trades.result}</dt><dd dir="ltr">{formatSignedMoney(realisedPnl(active), locale)}</dd></div>
+              <div><dt>{copy.trades.rMultiple}</dt><dd dir="ltr">{formatR(rMultiple(active))}</dd></div>
             </dl>
 
             {active.review !== undefined ? (
               <>
-                <h4 className="type-label text-accent">{app.detail.reviewTitle}</h4>
+                <h4 className="type-label text-accent">{copy.detail.reviewTitle}</h4>
                 <p className="type-data" dir="ltr">{formatPercent(adherenceRate(active), locale)}</p>
                 <ul className="japp-rules">
                   {active.review.rules.map((rule) => (
                     <li key={rule.id} data-adherence={rule.adherence}>
-                      <span>{app.review.rules[rule.id as keyof typeof app.review.rules] ?? rule.id}</span>
-                      <Pill kind={rule.adherence}>{app.review.adherence[rule.adherence]}</Pill>
+                      <span>{copy.review.rules[rule.id as keyof typeof copy.review.rules] ?? rule.id}</span>
+                      <Pill kind={rule.adherence}>{copy.review.adherence[rule.adherence]}</Pill>
                     </li>
                   ))}
                 </ul>
@@ -127,14 +154,14 @@ export default function JournalDemo({
                 ) : null}
               </>
             ) : (
-              <p className="type-caption text-muted">{app.detail.notReviewed}</p>
+              <p className="type-caption text-muted">{copy.detail.notReviewed}</p>
             )}
           </article>
         ) : null}
       </div>
 
       <Link href={`/${locale}/app/dashboard`} className="btn btn-primary mt-8">
-        {journal.openApp}
+        {copy.openApp}
       </Link>
     </section>
   );
