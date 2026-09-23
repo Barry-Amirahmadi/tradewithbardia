@@ -19,7 +19,6 @@ export interface DeviceSignals {
   effectiveType: string | null;
   coarsePointer: boolean;
   viewportWidth: number;
-  webgl: boolean;
 }
 
 interface NavigatorWithHints extends Navigator {
@@ -41,30 +40,33 @@ export function readSignals(): DeviceSignals {
     effectiveType: nav.connection?.effectiveType ?? null,
     coarsePointer: window.matchMedia("(pointer: coarse)").matches,
     viewportWidth: window.innerWidth,
-    webgl: detectWebGL(),
   };
 }
 
-/**
- * Probe by creating and immediately discarding a context. Cheap, and far more
- * honest than a user-agent sniff — a browser can advertise WebGL and still
- * fail to allocate one under memory pressure or a blocklisted driver.
+/*
+ * THE WEBGL PROBE WAS REMOVED — EPIC 10 §21.
+ *
+ * `readSignals` used to create a canvas, acquire a WebGL context and throw it
+ * away, purely so `profileFromSignals` could downgrade high to medium on a
+ * device that could not allocate one. Measured in Chrome 152 on this machine:
+ * **6.4 ms for the first probe, ~7 ms median** — paid on the main thread
+ * during hydration, on every page load, on hardware far faster than the phones
+ * this matters for.
+ *
+ * It bought a weak signal. No WebGL renderer exists, none is registered, and
+ * the renderer chain in `types.ts` resolves to canvas or static either way, so
+ * the probe could never gate an actual capability — only nudge one profile
+ * boundary. The remaining signals — device memory, core count, and a coarse
+ * pointer on a small viewport — describe a weak device more directly and cost
+ * nothing to read.
+ *
+ * The behavioural change is that a device without WebGL but with healthy
+ * memory and cores now resolves to `high` rather than `medium`. That affects
+ * atmosphere density and noise-point count in the canvas renderer, never
+ * correctness or content. If a WebGL renderer is ever built, the probe belongs
+ * inside that renderer's own initialisation, where a failure can fall down the
+ * chain — not in a startup path every visitor pays for.
  */
-function detectWebGL(): boolean {
-  try {
-    const canvas = document.createElement("canvas");
-    const gl =
-      canvas.getContext("webgl2") ??
-      canvas.getContext("webgl") ??
-      canvas.getContext("experimental-webgl");
-    if (gl === null) return false;
-    const lose = (gl as WebGLRenderingContext).getExtension("WEBGL_lose_context");
-    lose?.loseContext();
-    return true;
-  } catch {
-    return false;
-  }
-}
 
 export function profileFromSignals(signals: DeviceSignals): PerformanceProfile {
   // Reduced motion is a stated preference, not a capability guess. It wins
@@ -84,7 +86,6 @@ export function profileFromSignals(signals: DeviceSignals): PerformanceProfile {
   const midCores = signals.cores !== null && signals.cores <= 4;
   const smallViewport = signals.viewportWidth < 768;
 
-  if (!signals.webgl) return "medium";
   if (midMemory || midCores || (signals.coarsePointer && smallViewport)) {
     return "medium";
   }

@@ -24,6 +24,7 @@ import {
   formatR,
   formatSignedMoney,
 } from "@/lib/journal/format";
+import type { JournalLab } from "@/lib/journal/lab-view";
 import { reviewState, type StoredTrade } from "@/lib/journal/trade";
 import { dictionaryHref } from "@/lib/trading/dictionary";
 
@@ -75,7 +76,7 @@ export default function TradesView({
   trades: readonly StoredTrade[];
   journal: Dictionary["journal"];
   concepts: Dictionary["concepts"];
-  lab: Dictionary["lab"];
+  lab: JournalLab;
   dict: Dictionary["dict"];
   selected: string | null;
   onSelect: (id: string | null) => void;

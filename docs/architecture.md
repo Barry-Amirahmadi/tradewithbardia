@@ -859,3 +859,65 @@ the test layer, and the performance budget).
    fallback shows the resolved end state while the beat narration continues to
    advance. §12 does not require parity and the frame is honest, but the two
    halves are describing different moments.
+
+
+## Motion policy (EPIC 10 §6, §7)
+
+One vocabulary, defined once in `app/globals.css` and used by name everywhere:
+
+| Token | Duration | Job |
+|---|---|---|
+| `--motion-instant` | 120ms | State flips |
+| `--motion-micro` | 240ms | Hover, focus |
+| `--motion-interaction` | 420ms | Menus, panels |
+| `--motion-transition` | 720ms | Route and section |
+| `--motion-cinematic` | 1200ms | Hero beats |
+
+Components pick a category, never a millisecond count, so the whole product can
+be retimed from one place. Duration and easing are paired in the token because
+they are one decision.
+
+Motion intensity is deliberately **not** uniform across surfaces, and flattening
+it would erase information the reader uses to tell where they are: hero is the
+most cinematic, systems cinematic-on-scroll, the Setup Lab analytical, the
+Academy editorial, the Dictionary minimal, and the Journal restrained. The
+Journal's skeleton is unanimated for exactly this reason.
+
+## The journal payload projection (EPIC 10 §16, §18)
+
+`/app/*` was handed `dictionary.lab` whole, serializing the full specification
+prose for all five setups — purpose, context, trigger, invalidation, review —
+into all twelve application routes. Measured at **7,887 bytes raw / 2,921
+gzipped per route, ~34 kB gzipped across the build**, for text the application
+never renders; it needs five titles and three enum label maps.
+
+`lib/journal/lab-view.ts` now projects exactly that, and its type cannot express
+the prose. This is the same defect EPIC 04 found in the Navbar, which is why the
+fix is a named projection with a test rather than a narrower prop: passing a
+whole dictionary branch "in case the component wants it" is easy to do by
+accident and invisible until someone weighs the HTML.
+
+## Document language (EPIC 10 §30)
+
+`lang` and `dir` are set on the locale wrapper in `app/[locale]/layout.tsx`,
+which drives bidi and assistive technology for page content. The root layout
+sits above the `[locale]` segment and cannot know the locale, so `<html>` itself
+carried neither attribute — a WCAG 3.1.1 failure that also made screen readers
+read Persian with an English voice.
+
+The existing parse-blocking theme script now also sets both on `<html>` from the
+first path segment, before first paint, with no hydration mismatch because the
+server never renders them.
+
+**Limitation, stated rather than papered over:** an agent that does not execute
+JavaScript sees `<html>` without `lang`. The wrapper inside `<body>` still
+carries both. Setting them server-side would mean moving the root layout inside
+the locale segment, which is the change that left 404s unstyled — see the note
+in `app/layout.tsx`.
+
+A caution recorded because it shipped: `themeInitScript` is a template literal,
+so `\/` in the source collapses to `/` in the emitted script. The first version
+of this fix used a regex, produced a broken pattern, and the surrounding
+`try/catch` swallowed it — leaving the attributes unset with no error anywhere.
+It was caught only by a browser check asserting `<html dir>`. The script now
+uses `split`, which has no escape sequence to get wrong.

@@ -12,6 +12,7 @@ import {
   setupUsage,
 } from "@/lib/journal/analytics";
 import { formatCount, formatPercent, formatR, formatSignedMoney } from "@/lib/journal/format";
+import type { JournalLab } from "@/lib/journal/lab-view";
 import type { StoredTrade } from "@/lib/journal/trade";
 import type { TradingConceptId } from "@/lib/trading/concepts";
 
@@ -41,7 +42,7 @@ export default function AnalyticsView({
   trades: readonly StoredTrade[];
   journal: Dictionary["journal"];
   concepts: Dictionary["concepts"];
-  lab: Dictionary["lab"];
+  lab: JournalLab;
 }) {
   const app = journal.app;
   const found = insights(trades);

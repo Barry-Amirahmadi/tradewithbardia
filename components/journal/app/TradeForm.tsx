@@ -21,6 +21,7 @@ import {
   type IssueCode,
   type ValidationIssue,
 } from "@/lib/journal/trade";
+import type { JournalLab } from "@/lib/journal/lab-view";
 import { setups } from "@/lib/trading/setups";
 
 /**
@@ -54,7 +55,7 @@ interface Props {
   issues: readonly ValidationIssue[];
   locale: Locale;
   journal: Dictionary["journal"];
-  lab: Dictionary["lab"];
+  lab: JournalLab;
   concepts: Dictionary["concepts"];
   onSubmit: (draft: TradeDraft) => void;
   onCancel: () => void;

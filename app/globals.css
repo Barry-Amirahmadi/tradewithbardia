@@ -645,19 +645,38 @@
     align-items: center;
     justify-content: center;
     gap: var(--space-2);
-    height: 2.75rem;
+    /* `min-block-size`, not `height`: identical 44px box for a single-line
+       label, but a wrapped label on a narrow screen grows instead of
+       overflowing its own button. */
+    min-block-size: 2.75rem;
+    /* EPIC 10 §11. A button may not be wider than what contains it. Without
+       this the hero CTA measured 365px inside a 320px viewport and dragged
+       the whole document to 385px of horizontal scroll. */
+    max-inline-size: 100%;
     padding-inline: var(--space-6);
+    padding-block: var(--space-2);
     border-radius: var(--radius-pill);
     font-size: var(--size-caption);
     font-weight: var(--weight-medium);
     letter-spacing: var(--tracking-wide);
     text-transform: uppercase;
+    /* Short action labels read better on one line, so nowrap stays the default
+       and the desktop design is untouched. It is lifted only below the tablet
+       breakpoint, where a long label has nowhere to go — §12: mobile gets
+       deliberate behaviour, not a scaled-down copy. */
     white-space: nowrap;
     transition:
       background-color var(--dur-fast) var(--ease-out),
       border-color var(--dur-fast) var(--ease-out),
       color var(--dur-fast) var(--ease-out),
       transform var(--dur-fast) var(--ease-out);
+  }
+
+  @media (width < 48rem) {
+    .btn {
+      white-space: normal;
+      text-wrap: balance;
+    }
   }
 
   .btn:active:not(:disabled):not([aria-disabled="true"]) {
@@ -1425,6 +1444,17 @@
   }
 
   .site-brand {
+    /* A 21x21 hit area for the one link that goes home. The wordmark keeps its
+       size; the target around it reaches the 44px minimum (EPIC 10 §11, §30). */
+    display: inline-flex;
+    align-items: center;
+    min-block-size: 2.75rem;
+    /* The mobile wordmark collapses to a "TB" monogram just 21px wide, so the
+       box needs horizontal room too — a 44px-tall, 21px-wide target is still a
+       miss. Negative margin keeps the wordmark optically flush with the
+       gutter while the hit area extends past it. */
+    padding-inline: var(--space-3);
+    margin-inline-start: calc(var(--space-3) * -1);
     /* The wordmark stays Latin in both locales — it is a name, not copy. */
     font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
     font-size: var(--size-caption);
@@ -2186,7 +2216,13 @@
   }
 
   .replay-scrub { flex: 1 1 12rem; display: flex; }
-  .replay-scrub input { inline-size: 100%; accent-color: var(--accent); }
+  .replay-scrub input {
+    inline-size: 100%;
+    accent-color: var(--accent);
+    /* A native range is ~16px tall, which is not a touch target. The track
+       stays visually thin; the control's box is what grows (§11, §13). */
+    min-block-size: 2.75rem;
+  }
 
   .replay-stages {
     display: flex;
@@ -3014,7 +3050,12 @@
   .japp-table tbody th button {
     border: 0;
     background: none;
-    padding: 0;
+    /* Was `padding: 0`, giving a 41x21 target in a dense table. WCAG 2.2
+       Target Size (Minimum) asks 24x24; the padding buys that without
+       loosening the row rhythm. */
+    padding-block: var(--space-2);
+    padding-inline: 0;
+    min-block-size: 1.5rem;
     color: var(--text-primary);
     font: inherit;
     cursor: pointer;
@@ -3649,4 +3690,33 @@
      "3 of 12" is a fact (§22, §23). */
   .jinsights-subject { color: var(--text-primary); flex: 1 1 auto; }
   .jinsights .type-data { color: var(--text-muted); }
+}
+
+@layer components {
+  /* Loading skeleton for the private application — EPIC 10 §23, §24.
+
+     The application is client-only by design, so there is always one frame
+     before browser storage answers. Reserving that space is what keeps the
+     measured CLS at zero; the alternative is the empty state flashing and the
+     page jumping when records arrive.
+
+     Deliberately not animated. A shimmer here would be decoration on a surface
+     whose whole motion budget is "restrained/productive" (§7), and it would
+     need a reduced-motion exception it does not earn. */
+  .japp-skeleton {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    min-block-size: 60vh;
+  }
+
+  .japp-skeleton-bar {
+    display: block;
+    block-size: var(--space-8);
+    border-radius: var(--radius-sm);
+    background-color: var(--surface);
+  }
+
+  .japp-skeleton-bar:first-child { inline-size: 40%; }
+  .japp-skeleton-bar:nth-child(3) { inline-size: 75%; }
 }

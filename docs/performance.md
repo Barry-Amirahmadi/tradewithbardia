@@ -205,3 +205,77 @@ curl -s http://localhost:3000/fa | grep -oE '/_next/static/[^"]*\.js' | sort -u
 ```
 
 Sum those files from `.next/static`, gzipped, and compare against the table.
+
+
+## Runtime resource inventory (EPIC 10 §3)
+
+Enumerated by searching the whole repository for every persistent-resource API.
+This is the complete list; anything not here does not exist in the product.
+
+| Resource | Count | Owner | Lifecycle |
+|---|---|---|---|
+| Continuous `requestAnimationFrame` loop | **1** | `lib/motion/frame-loop.ts` | Starts on first subscriber, stops when the last one leaves. Verified in-browser: peak **1** concurrent callback after 9 client navigations. |
+| One-shot `rAF` | 2 | `use-dismissable-layer` (focus), `canvas-renderer` (resize) | Cancelled on unmount. |
+| Scroll engine | **1** | `components/motion/SmoothScroll.tsx` (Lenis), driven by the frame loop | Destroyed on unmount; skipped entirely under reduced motion. |
+| Global `scroll` / `wheel` / `resize` / `pointermove` listeners | **0** | — | Progress is sampled from `getBoundingClientRect` inside the one loop. |
+| `IntersectionObserver` | 3 | `HeroScene`, `SetupReplay`, `use-scroll-progress` | All disconnected on unmount. |
+| `ResizeObserver` | 1 | `lib/viz/canvas-renderer.tsx` | Disconnected on unmount. |
+| `MutationObserver` | 1 | `canvas-renderer` (theme attribute) | Disconnected on unmount. |
+| `setInterval` | **0** | — | — |
+| `setTimeout` | 5 | search debounce, two hover-dismiss delays, picker blur, form focus | All short-lived or cleared. |
+| Canvas renderers | ≤ 1 per route | `components/charts/TradingAnimation.tsx` façade | Suspended off-screen and when the page is hidden. |
+| WebGL / Three.js | **0** | — | No renderer, no dependency, and as of EPIC 10 no probe either. |
+
+### Renderer budget, measured
+
+| Route | Budget | Actual |
+|---|---|---|
+| `/` | ≤ 1 | 1 |
+| `/systems` | ≤ 1 | 1 |
+| `/setups` | 0 | 0 |
+| `/setups/[slug]` | ≤ 1 | 1 |
+| `/academy` | ≤ 1 | 1 |
+| `/dictionary` | 0 | 0 |
+| `/journal` | 0 | 0 |
+| `/app/*` | 0 | 0 |
+
+### Scroll sampling is bound to visibility (§5)
+
+`useScrollProgress` used to call `getBoundingClientRect` every frame for every
+subscribed section regardless of whether that section was on screen — a forced
+layout per section per frame, paid for pixels nobody could see. The renderer
+suspended itself off-screen; the measurement feeding it did not. It now shares
+the hero's `10%` root margin, samples once on entry, and settles to its end
+state on exit so a section flicked past does not freeze mid-story.
+
+### Device capability (§9, §10)
+
+Profiles are resolved once per page from signals that are free to read:
+reduced-motion preference, `deviceMemory`, `hardwareConcurrency`, `saveData`,
+`effectiveType`, pointer coarseness and viewport width. A stated reduced-motion
+preference outranks every hardware signal.
+
+**The WebGL probe was removed.** It created and discarded a GL context on every
+load — measured at **6.4 ms first call, ~7 ms median** in Chrome 152 on a fast
+desktop — to gate a capability no registered renderer uses. Its only effect was
+nudging `high` to `medium`. A device without WebGL but with healthy memory and
+cores now resolves to `high`, which changes atmosphere density and noise-point
+count, never correctness. If a WebGL renderer is ever built, the probe belongs
+in that renderer's initialisation where a failure can fall down the chain.
+
+### Layout stability (§23)
+
+Measured with `PerformanceObserver` on `layout-shift`, buffered:
+
+| Route | Before | After |
+|---|---|---|
+| every public route | 0 | 0 |
+| `/en/app/dashboard` | 0.0683 | **0.0001** |
+| `/fa/app/trades` | 0.3749 | **0.0001** |
+
+The application is client-only, so there is always one frame before browser
+storage answers. It used to render the *empty state* in that frame and then
+swap in the records — a lie to anyone holding forty trades, and a large shift.
+A reserved-height skeleton now occupies it. LCP could not be measured
+reliably in this headless environment and is **not reported** rather than
+guessed.

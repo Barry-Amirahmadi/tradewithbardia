@@ -15,9 +15,43 @@ export const themeChoices: readonly ThemeChoice[] = ["system", "light", "dark"];
  * "system" writes no attribute at all, which lets the `color-scheme: dark
  * light` declaration in globals.css follow the OS preference on its own.
  */
+/**
+ * Runs parse-blocking in `<head>`, before the first paint.
+ *
+ * Two jobs, both of which have to happen before anything is drawn:
+ *
+ * 1. **Theme** — or the visitor sees a flash of the palette they did not pick.
+ * 2. **`lang` and `dir` on `<html>`** — EPIC 10 §30. Both are also set on the
+ *    locale wrapper in `app/[locale]/layout.tsx`, which is what drives bidi and
+ *    assistive technology for the page CONTENT. But the root layout sits above
+ *    the `[locale]` segment and cannot know the locale, so `<html>` itself
+ *    carried neither attribute — leaving the document with no declared
+ *    language at all. That is a WCAG 3.1.1 failure and it makes a screen
+ *    reader read Persian with an English voice.
+ *
+ *    The locale is the first path segment, read with `split`, not a regex.
+ *    A regex here is a trap: this string is a TEMPLATE LITERAL, so `\/` in
+ *    the source collapses to `/` in the emitted script and silently produces a
+ *    broken pattern — which the surrounding `try/catch` then swallows, leaving
+ *    the attributes unset with no error anywhere. That exact bug shipped and
+ *    was caught only by a browser check asserting `<html dir>`. `split` has no
+ *    escape sequence to get wrong.
+ *
+ *    Being readable here means no waiting for React. Deriving it from the URL rather than from React state
+ *    also means no hydration mismatch: the server never renders these
+ *    attributes, and nothing on the client tries to reconcile them.
+ *
+ *    LIMITATION, stated rather than papered over: an agent that does not run
+ *    JavaScript sees `<html>` without `lang`. The wrapper element inside the
+ *    body still carries both attributes for such a reader, so content
+ *    direction and language remain declared either way. Setting them on
+ *    `<html>` server-side would mean moving the root layout inside the locale
+ *    segment, which is the structural change that left 404s unstyled — see the
+ *    note in `app/layout.tsx`.
+ */
 export const themeInitScript = `(function(){try{var v=localStorage.getItem(${JSON.stringify(
   THEME_STORAGE_KEY,
-)});if(v==="light"||v==="dark"){document.documentElement.setAttribute("data-theme",v)}}catch(e){}})()`;
+)});if(v==="light"||v==="dark"){document.documentElement.setAttribute("data-theme",v)}}catch(e){}try{var p=location.pathname.split("/")[1];var l=p==="fa"?"fa":"en";var d=document.documentElement;d.setAttribute("lang",l);d.setAttribute("dir",l==="fa"?"rtl":"ltr")}catch(e){}})()`;
 
 export function readStoredTheme(): ThemeChoice {
   if (typeof window === "undefined") return "system";

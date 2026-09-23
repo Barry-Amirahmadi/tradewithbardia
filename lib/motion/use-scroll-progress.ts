@@ -32,8 +32,9 @@ export function useScrollProgress(
     if (element === null || !enabled) return;
 
     let last = -1;
+    let unsubscribe: (() => void) | null = null;
 
-    const unsubscribe = onFrame(() => {
+    const sample = () => {
       const rect = element.getBoundingClientRect();
       const distance = rect.height - window.innerHeight;
 
@@ -45,9 +46,51 @@ export function useScrollProgress(
       if (Math.abs(progress - last) < 0.0002) return;
       last = progress;
       onProgress(progress);
-    });
+    };
 
-    return unsubscribe;
+    /**
+     * Sampling is bound to visibility — EPIC 10 §5.
+     *
+     * `getBoundingClientRect` forces a layout read, and this ran every frame
+     * for every subscribed section whether or not that section was anywhere
+     * near the viewport. On a page carrying two scrub sections that is two
+     * forced layouts per frame paid for pixels nobody can see.
+     *
+     * The renderer already suspended itself off-screen; the measurement that
+     * feeds it did not. This closes that gap at the source, so every current
+     * and future caller inherits it rather than each remembering to.
+     */
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries[0]?.isIntersecting ?? false;
+        if (visible && unsubscribe === null) {
+          // Sample once on entry so the first painted frame is already correct
+          // rather than one frame stale.
+          sample();
+          unsubscribe = onFrame(sample);
+        } else if (!visible && unsubscribe !== null) {
+          unsubscribe();
+          unsubscribe = null;
+          // Settle to the end state the section was heading toward, so a
+          // section scrolled past in one flick does not freeze mid-story.
+          const rect = element.getBoundingClientRect();
+          const settled = rect.top < 0 ? 1 : 0;
+          if (settled !== last) {
+            last = settled;
+            onProgress(settled);
+          }
+        }
+      },
+      // The same margin the hero uses to wake its renderer, so measurement is
+      // already running by the time anything is drawn.
+      { rootMargin: "10% 0px" },
+    );
+    observer.observe(element);
+
+    return () => {
+      observer.disconnect();
+      unsubscribe?.();
+    };
   }, [ref, onProgress, enabled]);
 }
 

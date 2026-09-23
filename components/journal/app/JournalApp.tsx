@@ -23,6 +23,7 @@ import {
   type TradeDraft,
 } from "@/lib/journal/draft";
 import { parseFragment, serializeFragment, type TradeMode } from "@/lib/journal/fragment";
+import type { JournalLab } from "@/lib/journal/lab-view";
 import type { MigrationResult } from "@/lib/journal/migration";
 import { LocalTradeRepository, type TradeRepository } from "@/lib/journal/repository";
 import type { StoredTrade, Trade, ValidationIssue } from "@/lib/journal/trade";
@@ -64,7 +65,7 @@ interface Props {
   mode: AppMode;
   journal: Dictionary["journal"];
   concepts: Dictionary["concepts"];
-  lab: Dictionary["lab"];
+  lab: JournalLab;
   dict: Dictionary["dict"];
 }
 
@@ -81,13 +82,31 @@ export default function JournalApp({ locale, view, mode, journal, concepts, lab,
   );
 
   const [trades, setTrades] = useState<readonly StoredTrade[]>([]);
+  /**
+   * "Not read yet" is not the same state as "no trades" — EPIC 10 §23, §24.
+   *
+   * Without this the shell rendered its empty state on the first frame and
+   * then swapped in the real records, which is both a lie to anyone who has
+   * forty trades and a measured layout shift: **CLS 0.375 on `/fa/app/trades`
+   * and 0.068 on `/en/app/dashboard`** before the fix, against 0 on every
+   * public route. The skeleton below reserves the space instead.
+   *
+   * This is the cost of the client-only architecture, paid honestly. The shell
+   * cannot server-render records — that is the privacy boundary working — so
+   * the one frame before storage answers has to be designed rather than
+   * stumbled through.
+   */
+  const [ready, setReady] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
   const [tradeMode, setTradeMode] = useState<TradeMode>("view");
   const [issues, setIssues] = useState<readonly ValidationIssue[]>([]);
   const [notice, setNotice] = useState<string | null>(null);
 
   const refresh = useCallback(() => {
-    void repository.list().then(setTrades);
+    void repository.list().then((rows) => {
+      setTrades(rows);
+      setReady(true);
+    });
   }, [repository]);
 
   useEffect(() => {
@@ -262,7 +281,19 @@ export default function JournalApp({ locale, view, mode, journal, concepts, lab,
       ) : null}
 
       <div className="japp-body">
-        {capturing ? (
+        {!ready ? (
+          /* Reserves the body's height so the real view does not push the page
+             when it arrives. `aria-busy` tells assistive technology that this
+             is a pending region rather than empty content, and the skeleton
+             carries no animation of its own — the reduced-motion rule applies
+             to loading states too (§24). */
+          <div className="japp-skeleton" role="status" aria-busy="true" aria-live="polite">
+            <span className="sr-only">{app.loading}</span>
+            <span className="japp-skeleton-bar" />
+            <span className="japp-skeleton-bar" />
+            <span className="japp-skeleton-bar" />
+          </div>
+        ) : capturing ? (
           <TradeForm
             mode={editing ? "edit" : "create"}
             initial={

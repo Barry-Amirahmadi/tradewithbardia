@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import JournalApp from "@/components/journal/app/JournalApp";
 import { isLocale, locales } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/dictionaries";
+import { journalLab } from "@/lib/journal/lab-view";
 import { appScreenSegments, resolveAppScreen } from "@/lib/journal/views";
 
 /**
@@ -74,7 +75,7 @@ export default async function AppPage({
       mode={screen.mode}
       journal={dictionary.journal}
       concepts={dictionary.concepts}
-      lab={dictionary.lab}
+      lab={journalLab(dictionary.lab)}
       dict={dictionary.dict}
     />
   );

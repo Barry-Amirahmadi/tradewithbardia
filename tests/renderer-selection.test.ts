@@ -20,7 +20,6 @@ function signals(overrides: Partial<DeviceSignals> = {}): DeviceSignals {
     effectiveType: "4g",
     coarsePointer: false,
     viewportWidth: 1440,
-    webgl: true,
     ...overrides,
   };
 }
@@ -51,8 +50,20 @@ describe("performance profile", () => {
     assert.equal(profileFromSignals(signals({ cores: 2 })), "low");
   });
 
-  it("no WebGL means medium, not low — canvas is still fine", () => {
-    assert.equal(profileFromSignals(signals({ webgl: false })), "medium");
+  /*
+   * EPIC 10 §21 removed the WebGL probe from `readSignals`: it cost ~6.4 ms of
+   * main-thread time per load to gate a capability no registered renderer
+   * uses. This test pins what replaced it — the profile is now decided by
+   * signals that are free to read, and no code path may reintroduce a probe by
+   * depending on a `webgl` field.
+   */
+  it("resolves a profile without probing the GPU at all", () => {
+    const keys = Object.keys(signals());
+    assert.ok(!keys.includes("webgl"), "device signals must not carry a GPU probe result");
+    // The ladder still separates capable hardware from weak hardware.
+    assert.equal(profileFromSignals(signals()), "high");
+    assert.equal(profileFromSignals(signals({ cores: 4 })), "medium");
+    assert.equal(profileFromSignals(signals({ cores: 2 })), "low");
   });
 
   it("a mid phone lands on medium", () => {

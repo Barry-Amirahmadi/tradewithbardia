@@ -919,7 +919,8 @@
         "deleteAllBody": "Delete every record, including the demo set, and start from an empty journal.",
         "deleteAll": "Delete all records",
         "deleteAllConfirm": "Delete every record permanently?"
-      }
+      },
+      "loading": "Loading your records"
     }
   },
   "viz": {
