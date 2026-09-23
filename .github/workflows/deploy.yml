@@ -1,0 +1,68 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  # Lets a deploy be re-run from the Actions tab without an empty commit,
+  # which matters when a Pages setting changed but the code did not.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never let two deploys race to publish. `cancel-in-progress: false` because a
+# half-finished upload that gets cancelled can leave the live site broken —
+# better to queue behind the running one.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # The test runner uses --experimental-strip-types, which needs 22.6+.
+          # 24 is what the project is developed on.
+          node-version: "24"
+          cache: npm
+
+      - run: npm ci
+
+      # The gate runs before the build, not after: a deploy that publishes a
+      # red build is worse than no deploy. 358 tests, ~6s.
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test
+
+      - name: Build static export
+        run: npm run build
+
+      # Belt and braces. actions/deploy-pages serves the artifact as-is and
+      # does not run Jekyll, but if this repo is ever switched to a
+      # branch-based Pages source, Jekyll would silently drop _next/ — every
+      # script and stylesheet on the site — and the failure looks like a
+      # styling bug rather than a missing file.
+      - name: Disable Jekyll processing
+        run: touch out/.nojekyll
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: out
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -4,6 +4,8 @@ import "./globals.css";
 
 import { themeInitScript } from "@/lib/theme";
 
+import type { Metadata } from "next";
+
 /**
  * The document shell — master prompt §14, §70.
  *
@@ -20,6 +22,25 @@ import { themeInitScript } from "@/lib/theme";
  * the locale is actually known. Both attributes drive bidi and assistive
  * technology from any element, not only from `<html>`.
  */
+
+/**
+ * The one place the deployed origin is written down.
+ *
+ * Every page builds its canonical and hreflang URLs as a root-relative path —
+ * `/fa/academy` — which the Metadata API resolves against this base. Without
+ * it Next emits those paths verbatim, and `basePath` is NOT applied to
+ * metadata the way it is to `<Link>`: the tags pointed at
+ * `barry-amirahmadi.github.io/fa`, a path on the user page that belongs to a
+ * different project entirely. Navigation was unaffected, so nothing looked
+ * broken — only crawlers would have followed it.
+ *
+ * The base carries the `/tradewithbardia` prefix because the site is a project
+ * page, not the domain root. Next joins the two pathnames rather than letting
+ * the leading slash escape to the origin.
+ */
+export const metadata: Metadata = {
+  metadataBase: new URL("https://barry-amirahmadi.github.io/tradewithbardia"),
+};
 
 /**
  * Fonts are self-hosted at build time by next/font — no runtime request to

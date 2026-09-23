@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <title>TradewithBardia</title>
+    <meta name="robots" content="noindex" />
+    <!--
+      The application lives entirely under /fa and /en; there is no route at
+      the site root, so a visitor landing on the bare URL would otherwise get
+      a 404 from a site that works perfectly one segment deeper.
+
+      Targets are RELATIVE, not absolute: this file is copied verbatim out of
+      public/ and never sees basePath, so "/fa/" would be wrong the moment the
+      repo is renamed or a custom domain is attached. "fa/" resolves against
+      whatever directory is actually serving this page.
+
+      The script runs before the meta refresh below is parsed, so JavaScript
+      decides when it can and the meta tag is the no-JS fallback. It falls
+      back to Persian because defaultLocale in lib/i18n/config.ts is "fa".
+    -->
+    <script>
+      (function () {
+        var tags = navigator.languages || [navigator.language || "fa"];
+        var wantsPersian = false;
+        for (var i = 0; i < tags.length; i++) {
+          var tag = String(tags[i]).toLowerCase();
+          // Match the language subtag only: "fa", "fa-IR" and "fa-AF" are all
+          // Persian, while a hypothetical "fake-LOCALE" is not.
+          if (tag === "fa" || tag.indexOf("fa-") === 0) {
+            wantsPersian = true;
+            break;
+          }
+          if (tag === "en" || tag.indexOf("en-") === 0) break;
+        }
+        // replace(), not assign(): the redirect must not leave a history entry
+        // that the back button bounces the visitor through forever.
+        location.replace(wantsPersian ? "fa/" : "en/");
+      })();
+    </script>
+    <meta http-equiv="refresh" content="0; url=fa/" />
+  </head>
+  <body>
+    <p><a href="fa/">فارسی</a> · <a href="en/">English</a></p>
+  </body>
+</html>
